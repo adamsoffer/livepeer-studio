@@ -5,7 +5,7 @@ require('dotenv').load()
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 module.exports = async function(agenda) {
-  agenda.define('email', (job, done) => {
+  agenda.define('email', () => {
     const msg = {
       to: 'adam.soffer@digitalsurgeons.com',
       from: 'ads1018@gmail.com',

@@ -32,12 +32,15 @@ export const sendConfirmation = async (req, res) => {
 
 // Create new contact and add contact to given list
 export const addUser = async function(req: any, res: any) {
-  console.log('env', process.env.SENDGRID_API_KEY)
   const emailBody = req.body
   const listID = emailBody['account']
+  const frequency = emailBody['frequency']
   const contactID = await createRecipient(emailBody)
-  await addRecipientToList(contactID, listID)
-  createEmailJob()
+  console.log(contactID)
+  if (contactID) {
+    await addRecipientToList(contactID, listID, frequency)
+    createEmailJob()
+  }
   res.sendStatus(200)
 }
 
@@ -45,7 +48,7 @@ async function createEmailJob() {
   await agenda
     .create('email', { to: 'adam@soffer.space' })
     .unique({ email: 'adam@soffer.space' })
-    .repeatEvery('1 week')
+    .repeatEvery('week', { skipImmediate: true })
     .save()
 }
 
@@ -107,9 +110,10 @@ async function createRecipient(emailBody: Email) {
   const timestamp = emailBody.time_sent
   const secondsInDay = 86400
   const timeElapsed = (Date.now() - Number(timestamp)) / 1000
-
+  console.log(emailType === optIn && timeElapsed < secondsInDay)
   // Confirm email type is opt in and link has been clicked within 1 day
   if (emailType === optIn && timeElapsed < secondsInDay) {
+    console.log('wtf')
     // Create recipient
     const [response] = await client.request({
       method: 'POST',
@@ -123,28 +127,33 @@ async function createRecipient(emailBody: Email) {
       ]
     })
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      const contactID = response.body.persisted_recipients[0]
-      return contactID
+      return response.body.persisted_recipients[0]
     } else {
-      // throw an error
+      return false
     }
   }
 }
 
-async function addRecipientToList(contactID: number, account: string) {
+async function addRecipientToList(
+  contactID: number,
+  account: string,
+  frequency: string
+) {
   const [, body] = await client.request({
     method: 'GET',
     url: '/v3/contactdb/lists'
   })
 
-  let list = body.lists.filter((list: any) => list.name == account)[0]
+  let list = body.lists.filter(
+    (list: any) => list.name == `${account} - ${frequency}`
+  )[0]
 
   // If list doesn't exist, create it
   if (!list) {
     ;[, list] = await client.request({
       method: 'POST',
       url: '/v3/contactdb/lists',
-      body: { name: account }
+      body: { name: `${account} - ${frequency}` }
     })
   }
 

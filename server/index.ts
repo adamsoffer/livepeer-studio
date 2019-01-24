@@ -36,7 +36,7 @@ app.prepare().then(async () => {
     console.log(`> Ready on http://localhost:${port}`)
   })
 
-  const tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
+  const tunnel = localtunnel(port, { subdomain: 'soffer' }, function(
     err,
     tunnel
   ) {
