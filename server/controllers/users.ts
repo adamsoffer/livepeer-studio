@@ -36,7 +36,7 @@ export const addUser = async function(req: any, res: any) {
   const listID = emailBody['account']
   const frequency = emailBody['frequency']
   const contactID = await createRecipient(emailBody)
-  console.log(contactID)
+
   if (contactID) {
     await addRecipientToList(contactID, listID, frequency)
     createEmailJob()
@@ -44,6 +44,7 @@ export const addUser = async function(req: any, res: any) {
   res.sendStatus(200)
 }
 
+// TODO: schedule based on user preference (daily, weekly, or monthly)
 async function createEmailJob() {
   await agenda
     .create('email', { to: 'adam@soffer.space' })
@@ -110,10 +111,9 @@ async function createRecipient(emailBody: Email) {
   const timestamp = emailBody.time_sent
   const secondsInDay = 86400
   const timeElapsed = (Date.now() - Number(timestamp)) / 1000
-  console.log(emailType === optIn && timeElapsed < secondsInDay)
+
   // Confirm email type is opt in and link has been clicked within 1 day
   if (emailType === optIn && timeElapsed < secondsInDay) {
-    console.log('wtf')
     // Create recipient
     const [response] = await client.request({
       method: 'POST',

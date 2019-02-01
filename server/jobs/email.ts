@@ -5,21 +5,41 @@ require('dotenv').load()
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 module.exports = async function(agenda) {
-  agenda.define('email', () => {
+  agenda.define('email', async (job, done) => {
+    const { to, delegatorAddress } = job.attrs.data
+    const query = `{
+      delegator(id: "${delegatorAddress}") {
+        shares {
+          rewardTokens
+          round {
+            timestamp
+            id
+          }
+        }
+      }
+    }`;
+    const response = await fetch(
+      process.env.GRAPH_API,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({ query })
+      }
+    );
+    const data = await response.json();
     const msg = {
-      to: 'adam.soffer@digitalsurgeons.com',
-      from: 'ads1018@gmail.com',
-      subject: 'Hello world',
-      text: 'Hello plain world!',
-      html: '<p>Hello HTML world!!asdf</p>',
+      to,
+      from: 'no-reply@livepeer.org',
+      subject: `Staking digest for ${delegatorAddress}`,
       templateId: 'd-87642cf59bb0447a860d6b7fdd79f768',
       dynamic_template_data: {
-        subject: 'Testing Templates',
-        Sender_Name: 'Livepeer',
-        first_name: 'Adam',
-        last_name: 'Adam'
+        ...data
       }
     }
     sgMail.send(msg)
+    done()
   })
 }

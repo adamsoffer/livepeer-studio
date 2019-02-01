@@ -1,8 +1,10 @@
 import Agenda from 'agenda'
 import fs from 'fs'
 
+require('dotenv').load()
+
 const mongoConnectionString =
-  'mongodb://admin:bloc-lapboard-inlaid@ds123500.mlab.com:23500/agenda'
+  `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@cluster0-hkwht.mongodb.net/${process.env.MONGO_DB}?retryWrites=true`
 const agenda = new Agenda({
   db: {
     address: mongoConnectionString,
