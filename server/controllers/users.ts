@@ -23,10 +23,10 @@ interface Email {
   [key: string]: any
 }
 
-async function formatData(frequency, { delegator, rounds }) {
-  console.log(frequency)
+async function formatData(_frequency, { delegator, rounds }) {
   const currentRound = +rounds[0].id
-  const { shares } = delegator
+  const { shares, delegate } = delegator
+  const { pools } = delegate
 
   const dateFrom = moment
     .utc()
@@ -37,41 +37,81 @@ async function formatData(frequency, { delegator, rounds }) {
   const dateTo = moment
     .utc()
     .endOf('day')
-    .subtract(2, 'd')
+    .subtract(3, 'd')
     .unix()
 
-  const filteredShares = shares.filter(function(share) {
+  // Get all the delegator's shares between the time frame specified (daily vs weekly)
+  const sharesBetweenDates = shares.filter(function(share) {
     return (
       +share.round.id !== currentRound && +share.round.timestamp >= dateFrom
     )
   })
 
-  const totalRewardTokens = Utils.fromWei(
-    filteredShares
-      .reduce(function(acc, obj) {
-        return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
-      }, 0)
-      .toString(),
-    'ether'
-  )
+  // Add up all the delegator's reward tokens earned during that time frame
+  const shareRewardTokens = parseFloat(
+    Utils.fromWei(
+      sharesBetweenDates
+        .reduce(function(acc, obj) {
+          return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
+        }, 0)
+        .toString(),
+      'ether'
+    )
+  ).toFixed(2)
 
-  const totalFees = Utils.fromWei(
-    filteredShares
-      .reduce(function(acc, obj) {
-        return bigInt(acc).plus(obj.fees ? obj.fees : 0)
-      }, 0)
-      .toString(),
-    'ether'
-  )
+  // Add up all the delegator's fees earned during that time frame
+  const shareFees = parseFloat(
+    Utils.fromWei(
+      sharesBetweenDates
+        .reduce(function(acc, obj) {
+          return bigInt(acc).plus(obj.fees ? obj.fees : 0)
+        }, 0)
+        .toString(),
+      'ether'
+    )
+  ).toFixed(2)
 
-  const roundFrom = filteredShares.reduce(
+  // Get all the delegate's pools between the time frame specified (daily vs weekly)
+  const poolsBetweenDates = pools.filter(function(pool) {
+    return +pool.round.id !== currentRound && +pool.round.timestamp >= dateFrom
+  })
+
+  const missedRewardCalls = poolsBetweenDates.filter(
+    pool => pool.rewardTokens === null
+  ).length
+
+  // Add up all the delegate's claimed reward tokens in the pools during that time frame
+  const poolRewardTokens = parseFloat(
+    Utils.fromWei(
+      poolsBetweenDates
+        .reduce(function(acc, obj) {
+          return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
+        }, 0)
+        .toString(),
+      'ether'
+    )
+  ).toFixed(2)
+
+  // Add up all the delegate's claimed fees in the pools during that time frame
+  const poolFees = parseFloat(
+    Utils.fromWei(
+      poolsBetweenDates
+        .reduce(function(acc, obj) {
+          return bigInt(acc).plus(obj.fees ? obj.fees : 0)
+        }, 0)
+        .toString(),
+      'ether'
+    )
+  ).toFixed(2)
+
+  const roundFrom = sharesBetweenDates.reduce(
     (min, p) => (+p.round.id < +min ? +p.round.id : +min),
-    +filteredShares[0].round.id
+    +sharesBetweenDates[0].round.id
   )
 
-  const roundTo = filteredShares.reduce(
+  const roundTo = sharesBetweenDates.reduce(
     (max, p) => (+p.round.id > +max ? +p.round.id : +max),
-    +filteredShares[0].round.id
+    +sharesBetweenDates[0].round.id
   )
 
   return {
@@ -79,16 +119,27 @@ async function formatData(frequency, { delegator, rounds }) {
     dateTo,
     roundFrom,
     roundTo,
-    totalRewardTokens,
-    totalFees
+    missedRewardCalls,
+    pools: poolsBetweenDates,
+    shares: sharesBetweenDates,
+    poolRewardTokens,
+    poolFees: poolFees,
+    shareRewardTokens,
+    shareFees,
+    delegatorAddress: delegator.id,
+    delegateAddress: delegate.id
   }
 }
 
-export const getCurrentRound = async function() {
+export const getInitialData = async function(delegatorAddress) {
   const query = `{
     rounds(first: 1, orderDirection: desc, orderBy: timestamp) {
       id
-      timestamp
+    }
+    delegator(id: "${delegatorAddress}") {
+      delegate {
+        id
+      }
     }
   }`
 
@@ -104,20 +155,33 @@ export const getCurrentRound = async function() {
         }
       }
     )
-    return +data.data.rounds[0].id
+    return {
+      currentRound: +data.data.rounds[0].id,
+      delegateAddress: data.data.delegator.delegate.id
+    }
   } catch (e) {
     console.log(e)
   }
 }
 
 export const queryGraph = async function(frequency, delegatorAddress) {
-  const currentRound = await getCurrentRound()
+  const { currentRound, delegateAddress } = await getInitialData(
+    delegatorAddress
+  )
+
   // Get delegators most recent 40 shares
   const limit = 40
-  // Constructs where clause for graphql query
-  const id_in = Array.from(
+
+  // Construct where clause for shares fragment
+  const id_in_shares = Array.from(
     { length: limit },
     (_v, k) => `"${delegatorAddress}-${k + (currentRound - limit)}"`
+  ).join()
+
+  // Construct where clause for pools fragment
+  const id_in_pools = Array.from(
+    { length: limit },
+    (_v, k) => `"${delegateAddress}-${k + (currentRound - limit)}"`
   ).join()
 
   const query = `{
@@ -129,8 +193,16 @@ export const queryGraph = async function(frequency, delegatorAddress) {
       id
       delegate {
         id
+        pools(where: { id_in: [${id_in_pools}] } ) {
+          rewardTokens
+          fees
+          round {
+            id
+            timestamp
+          }
+        }
       }
-      shares(where: { id_in: [${id_in}] } ) {
+      shares(where: { id_in: [${id_in_shares}] } ) {
         fees
         rewardTokens
         round {
@@ -153,7 +225,6 @@ export const queryGraph = async function(frequency, delegatorAddress) {
         }
       }
     )
-    console.log(data)
     return formatData(frequency, data.data)
   } catch (e) {
     console.log(e)
@@ -166,16 +237,71 @@ export const sendEmail = async function(_req: any, res: any) {
   const data = await queryGraph(frequency, delegatorAddress)
   res.setHeader('Content-Type', 'application/json')
   res.send(JSON.stringify(data))
-  // const msg = {
-  //   to,
-  //   from: 'no-reply@livepeer.org',
-  //   subject: `Staking digest for ${delegatorAddress}`,
-  //   templateId: 'd-87642cf59bb0447a860d6b7fdd79f768',
-  //   dynamic_template_data: {
-  //     ...data
-  //   }
-  // }
-  // sgMail.send(msg)
+
+  const monthFrom = moment.unix(data.dateFrom).format('MMMM')
+  const monthTo = moment.unix(data.dateTo).format('MMMM')
+  const abbrMonthFrom = moment.unix(data.dateFrom).format('MMM')
+  const abbrMonthTo = moment.unix(data.dateTo).format('MMM')
+  const dateFrom = moment.unix(data.dateFrom).format('D')
+  const dateTo = moment.unix(data.dateTo).format('D')
+  const ordinalDateFrom = moment.unix(data.dateFrom).format('Do')
+  const ordinalDateTo = moment.unix(data.dateTo).format('Do')
+  const year = moment.unix(data.dateTo).format('YYYY')
+  const todaysDate = moment().format('MMM D, YYYY')
+  const mailData = {
+    personalizations: [
+      {
+        to: [
+          {
+            email: 'ads1018@gmail.com'
+          }
+        ],
+        dynamic_template_data: {
+          frequency: 'Weekly',
+          monthFrom,
+          monthTo,
+          abbrMonthFrom,
+          abbrMonthTo,
+          dateFrom,
+          dateTo,
+          ordinalDateFrom,
+          ordinalDateTo,
+          year,
+          todaysDate,
+          roundFrom: data.roundFrom,
+          roundTo: data.roundTo,
+          shareRewardTokens: data.shareRewardTokens,
+          shareFees: data.shareFees,
+          poolRewardTokens: data.poolRewardTokens,
+          poolFees: data.poolFees,
+          missedRewardCalls: data.missedRewardCalls,
+          delegateAddress: data.delegateAddress,
+          truncatedDelegateAddress: data.delegateAddress.replace(
+            data.delegateAddress.slice(5, -3),
+            '...'
+          )
+        },
+        subject: `Staking digest for ${delegatorAddress}`
+      }
+    ],
+    from: {
+      email: 'noreply@livepeer.org',
+      name: 'Livepeer'
+    },
+    reply_to: {
+      email: 'noreply@livepeer.org',
+      name: 'Livepeer'
+    },
+    template_id: 'd-87642cf59bb0447a860d6b7fdd79f768'
+  }
+
+  const [response, body] = await client.request({
+    body: mailData,
+    method: 'POST',
+    url: '/v3/mail/send'
+  })
+  console.log(response.statusCode)
+  console.log(body)
 }
 
 // Send confirmation email to contact with link to confirm email
