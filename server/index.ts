@@ -2,10 +2,10 @@ import Agendash from 'agendash'
 import bodyParser from 'body-parser'
 import express from 'express'
 import localtunnel from 'localtunnel'
-import morgan from 'morgan'
 import next from 'next'
 import agenda from './agenda'
-import { addUser, sendConfirmation, sendEmail } from './controllers/users'
+import { dispatch, sendConfirmation } from './controllers/users'
+import shell from 'shelljs'
 
 const port = parseInt(process.env.PORT, 10) || 3000
 const dev = process.env.NODE_ENV !== 'production'
@@ -14,7 +14,6 @@ const handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
   const server = express()
-  server.use(morgan('combined'))
   server.use(bodyParser.json())
   server.use(bodyParser.urlencoded({ extended: true }))
 
@@ -24,9 +23,8 @@ app.prepare().then(async () => {
       title: 'Staking Digest'
     })
   )
-  server.post('/testEmail', sendEmail)
   server.post('/confirmEmail', sendConfirmation)
-  server.post('/signup', addUser)
+  server.post('/dispatch', dispatch)
   server.get('*', (req, res) => {
     return handle(req, res)
   })
@@ -35,11 +33,13 @@ app.prepare().then(async () => {
     console.log(`> Ready on http://localhost:${port}`)
   })
 
-  const tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
+  const tunnel = localtunnel(port, { subdomain: 'staking-digest' }, function(
     err,
     tunnel
   ) {
     if (err) {
+      // retry if error
+      shell.exec('./localtunnel.sh')
       console.log(err)
     } else {
       console.log(tunnel.url)
@@ -47,6 +47,7 @@ app.prepare().then(async () => {
   })
 
   tunnel.on('close', function() {
+    shell.exec('./localtunnel.sh')
     console.log('tunnel closed')
   })
 })

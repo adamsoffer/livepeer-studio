@@ -36,6 +36,8 @@
     "react-dom": "^16.8.1",
     "react-normalize": "^0.2.9",
     "sendgrid": "^4.0.2",
+    "shelljs": "^0.8.3",
+    "url": "^0.11.0",
     "web3-utils": "^1.0.0-beta.46"
   },
   "publishConfig": {

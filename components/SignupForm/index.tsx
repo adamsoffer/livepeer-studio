@@ -17,7 +17,7 @@ export const StyledRadioGroup: any = styled(RadioGroup)({
 })
 
 export default () => {
-  const [frequency, setFrequency] = useState('daily')
+  const [frequency, setFrequency] = useState('weekly')
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFrequency(event.target.value)
   }
@@ -47,8 +47,8 @@ export default () => {
             <div>
               <input
                 type="text"
-                name="account"
-                defaultValue="0x58b6a8a3302369daec383334672404ee733ab239"
+                name="delegatorAddress"
+                defaultValue="0x22b544d19ffe43c6083327271d9f39020da30c65"
                 placeholder="account"
               />
             </div>
@@ -59,11 +59,6 @@ export default () => {
                 aria-label="Frequency"
                 name="frequency"
                 value={frequency}>
-                <FormControlLabel
-                  value="daily"
-                  control={<Radio />}
-                  label="Daily"
-                />
                 <FormControlLabel
                   value="weekly"
                   control={<Radio />}
