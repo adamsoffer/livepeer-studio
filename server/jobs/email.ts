@@ -10,31 +10,31 @@ client.setApiKey(process.env.SENDGRID_API_KEY)
 client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
 async function formatData(_frequency, { delegator, rounds }) {
-  const currentRound = +rounds[0].id
-  const { shares, delegate } = delegator
-  const { pools } = delegate
+  let currentRound = +rounds[0].id
+  let { shares, delegate } = delegator
+  let { pools } = delegate
 
-  const dateFrom = moment
+  let dateFrom = moment
     .utc()
     .startOf('day')
     .subtract(9, 'd')
     .unix()
 
-  const dateTo = moment
+  let dateTo = moment
     .utc()
     .endOf('day')
     .subtract(3, 'd')
     .unix()
 
   // Get all the delegator's shares between the time frame specified (daily vs weekly)
-  const sharesBetweenDates = shares.filter(function(share) {
+  let sharesBetweenDates = shares.filter(function(share) {
     return (
       +share.round.id !== currentRound && +share.round.timestamp >= dateFrom
     )
   })
 
   // Add up all the delegator's reward tokens earned during that time frame
-  const shareRewardTokens = parseFloat(
+  let shareRewardTokens = parseFloat(
     Utils.fromWei(
       sharesBetweenDates
         .reduce(function(acc, obj) {
@@ -46,7 +46,7 @@ async function formatData(_frequency, { delegator, rounds }) {
   ).toFixed(2)
 
   // Add up all the delegator's fees earned during that time frame
-  const shareFees = parseFloat(
+  let shareFees = parseFloat(
     Utils.fromWei(
       sharesBetweenDates
         .reduce(function(acc, obj) {
@@ -58,16 +58,16 @@ async function formatData(_frequency, { delegator, rounds }) {
   ).toFixed(2)
 
   // Get all the delegate's pools between the time frame specified (daily vs weekly)
-  const poolsBetweenDates = pools.filter(function(pool) {
+  let poolsBetweenDates = pools.filter(function(pool) {
     return +pool.round.id !== currentRound && +pool.round.timestamp >= dateFrom
   })
 
-  const missedRewardCalls = poolsBetweenDates.filter(
+  let missedRewardCalls = poolsBetweenDates.filter(
     pool => pool.rewardTokens === null
   ).length
 
   // Add up all the delegate's claimed reward tokens in the pools during that time frame
-  const poolRewardTokens = parseFloat(
+  let poolRewardTokens = parseFloat(
     Utils.fromWei(
       poolsBetweenDates
         .reduce(function(acc, obj) {
@@ -79,7 +79,7 @@ async function formatData(_frequency, { delegator, rounds }) {
   ).toFixed(2)
 
   // Add up all the delegate's claimed fees in the pools during that time frame
-  const poolFees = parseFloat(
+  let poolFees = parseFloat(
     Utils.fromWei(
       poolsBetweenDates
         .reduce(function(acc, obj) {
@@ -90,12 +90,12 @@ async function formatData(_frequency, { delegator, rounds }) {
     )
   ).toFixed(2)
 
-  const roundFrom = sharesBetweenDates.reduce(
+  let roundFrom = sharesBetweenDates.reduce(
     (min, p) => (+p.round.id < +min ? +p.round.id : +min),
     +sharesBetweenDates[0].round.id
   )
 
-  const roundTo = sharesBetweenDates.reduce(
+  let roundTo = sharesBetweenDates.reduce(
     (max, p) => (+p.round.id > +max ? +p.round.id : +max),
     +sharesBetweenDates[0].round.id
   )
@@ -118,7 +118,7 @@ async function formatData(_frequency, { delegator, rounds }) {
 }
 
 export const getInitialData = async function(delegatorAddress) {
-  const query = `{
+  let query = `{
     rounds(first: 1, orderDirection: desc, orderBy: timestamp) {
       id
     }
@@ -130,7 +130,7 @@ export const getInitialData = async function(delegatorAddress) {
   }`
 
   try {
-    const { data } = await axios.post(
+    let { data } = await axios.post(
       process.env.GRAPH_API,
       {
         query: query
@@ -151,27 +151,24 @@ export const getInitialData = async function(delegatorAddress) {
 }
 
 export const queryGraph = async function(frequency, delegatorAddress) {
-  console.log('whatttt', frequency, delegatorAddress)
-  const { currentRound, delegateAddress } = await getInitialData(
-    delegatorAddress
-  )
+  let { currentRound, delegateAddress } = await getInitialData(delegatorAddress)
 
   // Get delegators most recent 40 shares
-  const limit = 40
+  let limit = 40
 
   // Construct where clause for shares fragment
-  const id_in_shares = Array.from(
+  let id_in_shares = Array.from(
     { length: limit },
     (_v, k) => `"${delegatorAddress}-${k + (currentRound - limit)}"`
   ).join()
 
   // Construct where clause for pools fragment
-  const id_in_pools = Array.from(
+  let id_in_pools = Array.from(
     { length: limit },
     (_v, k) => `"${delegateAddress}-${k + (currentRound - limit)}"`
   ).join()
 
-  const query = `{
+  let query = `{
     rounds(first: 1, orderDirection: desc, orderBy: timestamp) {
       id
       timestamp
@@ -201,7 +198,7 @@ export const queryGraph = async function(frequency, delegatorAddress) {
   }`
 
   try {
-    const { data } = await axios.post(
+    let { data } = await axios.post(
       process.env.GRAPH_API,
       {
         query: query
@@ -223,29 +220,29 @@ export const sendEmail = async function({
   email,
   delegatorAddress
 }) {
-  const data = await queryGraph(frequency, delegatorAddress)
-  const monthFrom = moment.unix(data.dateFrom).format('MMMM')
-  const monthTo = moment.unix(data.dateTo).format('MMMM')
-  const abbrMonthFrom = moment.unix(data.dateFrom).format('MMM')
-  const abbrMonthTo = moment.unix(data.dateTo).format('MMM')
-  const dateFrom = moment.unix(data.dateFrom).format('D')
-  const dateTo = moment.unix(data.dateTo).format('D')
-  const ordinalDateFrom = moment.unix(data.dateFrom).format('Do')
-  const ordinalDateTo = moment.unix(data.dateTo).format('Do')
-  const year = moment.unix(data.dateTo).format('YYYY')
-  const todaysDate = moment().format('MMM D, YYYY')
-  const totalRounds = data.roundTo - data.roundFrom + 1
-  const averageShareRewardTokens = (
+  let data = await queryGraph(frequency, delegatorAddress)
+  let monthFrom = moment.unix(data.dateFrom).format('MMMM')
+  let monthTo = moment.unix(data.dateTo).format('MMMM')
+  let abbrMonthFrom = moment.unix(data.dateFrom).format('MMM')
+  let abbrMonthTo = moment.unix(data.dateTo).format('MMM')
+  let dateFrom = moment.unix(data.dateFrom).format('D')
+  let dateTo = moment.unix(data.dateTo).format('D')
+  let ordinalDateFrom = moment.unix(data.dateFrom).format('Do')
+  let ordinalDateTo = moment.unix(data.dateTo).format('Do')
+  let year = moment.unix(data.dateTo).format('YYYY')
+  let todaysDate = moment().format('MMM D, YYYY')
+  let totalRounds = data.roundTo - data.roundFrom + 1
+  let averageShareRewardTokens = (
     +data.shareRewardTokens / totalRounds
   ).toFixed(2)
-  const averageShareFees = (+data.shareFees / totalRounds).toFixed(2)
-  const truncatedDelegateAddress = data.delegateAddress.replace(
+  let averageShareFees = (+data.shareFees / totalRounds).toFixed(2)
+  let truncatedDelegateAddress = data.delegateAddress.replace(
     data.delegateAddress.slice(5, -3),
     '...'
   )
-  const title = `Staking Digest (${frequency.charAt(0).toUpperCase() +
+  let title = `Staking Digest (${frequency.charAt(0).toUpperCase() +
     frequency.slice(1)})`
-  const mailData = {
+  let mailData = {
     personalizations: [
       {
         to: [
@@ -313,7 +310,7 @@ export const sendEmail = async function({
 
 module.exports = async function(agenda) {
   agenda.define('email', async (job, done) => {
-    const { frequency, email, delegatorAddress } = job.attrs.data
+    let { frequency, email, delegatorAddress } = job.attrs.data
     await sendEmail({ frequency, email, delegatorAddress })
     done()
   })

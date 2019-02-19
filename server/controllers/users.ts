@@ -10,20 +10,10 @@ client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
 const optIn = 'opt-in'
 
-interface Email {
-  personalizations: any[]
-  from: object
-  content: object[]
-  template_id?: string
-  time_sent?: string
-  type?: string
-  [key: string]: any
-}
-
 // Send confirmation email to contact with link to confirm email
 export const sendConfirmation = async (req, res) => {
-  const emailBody = req.body
-  const [response] = await client.request({
+  let emailBody = req.body
+  let [response] = await client.request({
     method: 'POST',
     url: '/v3/mail/send',
     body: prepareConfirmationEmail(emailBody)
@@ -36,7 +26,7 @@ export const dispatch = async function(req: any, res: any) {
     return res.sendStatus(401)
   }
 
-  const parsedUrl = url.parse(req.body[0]['url'], true)
+  let parsedUrl = url.parse(req.body[0]['url'], true)
 
   switch (parsedUrl.pathname) {
     case '/unsubscribe':
@@ -66,22 +56,16 @@ async function cancelJob({ frequency, email, delegatorAddress }) {
 }
 
 async function unsubscribe({ frequency, email, delegatorAddress }) {
-  const recipient_id = await getRecipientId(email)
-  const list_id = await getListId({ recipient_id, frequency, delegatorAddress })
+  let recipient_id = await getRecipientId(email)
+  let list_id = await getListId({ recipient_id, frequency, delegatorAddress })
 
   await deleteRecipientFromList({ list_id, recipient_id })
   await cancelJob({ frequency, email, delegatorAddress })
 }
 
 // Create new contact and add contact to given list
-export const addUser = async function({
-  frequency,
-  email,
-  delegatorAddress,
-  type,
-  timeSent
-}) {
-  const contactID = await createRecipient({
+async function addUser({ frequency, email, delegatorAddress, type, timeSent }) {
+  let contactID = await createRecipient({
     type,
     timeSent,
     email
@@ -93,7 +77,7 @@ export const addUser = async function({
 }
 
 async function createEmailJob({ frequency, email, delegatorAddress }) {
-  const job = await agenda.create('email', {
+  let job = await agenda.create('email', {
     frequency,
     email,
     delegatorAddress
@@ -105,7 +89,7 @@ async function createEmailJob({ frequency, email, delegatorAddress }) {
 
 async function getRecipientId(email) {
   try {
-    const [response] = await client.request({
+    let [response] = await client.request({
       method: 'GET',
       url: `/v3/contactdb/recipients/search?email=${email}`
     })
@@ -117,11 +101,11 @@ async function getRecipientId(email) {
 
 async function getListId({ recipient_id, frequency, delegatorAddress }) {
   try {
-    const [response] = await client.request({
+    let [response] = await client.request({
       method: 'GET',
       url: `/v3/contactdb/recipients/${recipient_id}/lists`
     })
-    const listId = response.body.lists.filter(
+    let listId = response.body.lists.filter(
       (list: any) => list.name == `${delegatorAddress} - ${frequency}`
     )[0].id
     return listId.toString()
@@ -132,7 +116,7 @@ async function getListId({ recipient_id, frequency, delegatorAddress }) {
 
 async function deleteRecipientFromList({ list_id, recipient_id }) {
   try {
-    const [response] = await client.request({
+    let [response] = await client.request({
       method: 'DELETE',
       url: `/v3/contactdb/lists/${list_id}/recipients/${recipient_id}`
     })
@@ -147,14 +131,14 @@ async function deleteRecipientFromList({ list_id, recipient_id }) {
 }
 
 function prepareConfirmationEmail(reqBody: any) {
-  const subject = 'Please Confirm Your Email Address'
-  const link = `<a href="${settings.url}/success">this link</a>`
-  const mailText =
+  let subject = 'Please Confirm Your Email Address'
+  let link = `<a href="${settings.url}/success">this link</a>`
+  let mailText =
     'Thanks for signing up! Click ' +
     link +
     ' to sign up!  This link will be active for 24 hours.'
 
-  let emailBody: Email = {
+  let emailBody = {
     personalizations: [
       {
         to: [
@@ -191,13 +175,13 @@ function prepareConfirmationEmail(reqBody: any) {
 }
 
 async function createRecipient({ type, timeSent, email }) {
-  const secondsInDay = 86400
-  const timeElapsed = (Date.now() - Number(timeSent)) / 1000
+  let secondsInDay = 86400
+  let timeElapsed = (Date.now() - Number(timeSent)) / 1000
 
   // Confirm email type is opt in and link has been clicked within 1 day
   if (type === optIn && timeElapsed < secondsInDay) {
     // Create recipient
-    const [response] = await client.request({
+    let [response] = await client.request({
       method: 'POST',
       url: '/v3/contactdb/recipients',
       body: [
@@ -215,7 +199,7 @@ async function createRecipient({ type, timeSent, email }) {
 }
 
 async function addRecipientToList({ contactID, delegatorAddress, frequency }) {
-  const [, body] = await client.request({
+  let [, body] = await client.request({
     method: 'GET',
     url: '/v3/contactdb/lists'
   })
