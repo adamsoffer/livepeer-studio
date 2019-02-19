@@ -6,7 +6,7 @@ import url from 'url'
 require('dotenv').load()
 
 client.setApiKey(process.env.SENDGRID_API_KEY)
-client.setDefaultHeader('User-Agent', 'staking-digest/1.0.0')
+client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
 const optIn = 'opt-in'
 
@@ -31,13 +31,46 @@ export const sendConfirmation = async (req, res) => {
   res.sendStatus(response.statusCode)
 }
 
-// TODO: unsubscribe logic
-export const unsubscribe = async function({
-  frequency,
-  email,
-  delegatorAddress
-}) {
-  console.log('unsubscribe', frequency, email, delegatorAddress)
+export const dispatch = async function(req: any, res: any) {
+  if (req.query.accessToken !== process.env.SENDGRID_API_KEY) {
+    return res.sendStatus(401)
+  }
+
+  const parsedUrl = url.parse(req.body[0]['url'], true)
+
+  switch (parsedUrl.pathname) {
+    case '/unsubscribe':
+      await unsubscribe({ ...req.body[0] })
+      break
+    case '/success':
+      await addUser({ ...req.body[0] })
+      break
+    default:
+      return
+  }
+  res.sendStatus(200)
+}
+
+async function cancelJob({ frequency, email, delegatorAddress }) {
+  try {
+    // delete job
+    await agenda.cancel({
+      name: 'email',
+      'data.frequency': frequency,
+      'data.email': email,
+      'data.delegatorAddress': delegatorAddress
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+async function unsubscribe({ frequency, email, delegatorAddress }) {
+  const recipient_id = await getRecipientId(email)
+  const list_id = await getListId({ recipient_id, frequency, delegatorAddress })
+
+  await deleteRecipientFromList({ list_id, recipient_id })
+  await cancelJob({ frequency, email, delegatorAddress })
 }
 
 // Create new contact and add contact to given list
@@ -55,7 +88,7 @@ export const addUser = async function({
   })
   if (contactID) {
     await addRecipientToList({ contactID, delegatorAddress, frequency })
-    createEmailJob({ frequency, email, delegatorAddress })
+    await createEmailJob({ frequency, email, delegatorAddress })
   }
 }
 
@@ -66,28 +99,51 @@ async function createEmailJob({ frequency, email, delegatorAddress }) {
     delegatorAddress
   })
   job.unique({ frequency, email, delegatorAddress })
+  job.repeatEvery('0 7 * * 1')
   job.save()
 }
 
-export const dispatch = async function(req: any, res: any) {
-  if (req.query.accessToken !== process.env.SENDGRID_API_KEY) {
-    return res.sendStatus(401)
+async function getRecipientId(email) {
+  try {
+    const [response] = await client.request({
+      method: 'GET',
+      url: `/v3/contactdb/recipients/search?email=${email}`
+    })
+    return response.body.recipients[0].id
+  } catch (e) {
+    console.log(e)
   }
+}
 
-  const emailBody = req.body[0]
-  const parsedUrl = url.parse(emailBody['url'], true)
-
-  switch (parsedUrl.pathname) {
-    case '/unsubscribe':
-      await unsubscribe({ ...emailBody })
-      break
-    case '/success':
-      await addUser({ ...emailBody })
-      break
-    default:
-      return
+async function getListId({ recipient_id, frequency, delegatorAddress }) {
+  try {
+    const [response] = await client.request({
+      method: 'GET',
+      url: `/v3/contactdb/recipients/${recipient_id}/lists`
+    })
+    const listId = response.body.lists.filter(
+      (list: any) => list.name == `${delegatorAddress} - ${frequency}`
+    )[0].id
+    return listId.toString()
+  } catch (e) {
+    console.log(e)
   }
-  res.sendStatus(200)
+}
+
+async function deleteRecipientFromList({ list_id, recipient_id }) {
+  try {
+    const [response] = await client.request({
+      method: 'DELETE',
+      url: `/v3/contactdb/lists/${list_id}/recipients/${recipient_id}`
+    })
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return true
+    } else {
+      return false
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 function prepareConfirmationEmail(reqBody: any) {

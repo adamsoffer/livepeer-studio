@@ -7,7 +7,7 @@ import bigInt from 'big-integer'
 require('dotenv').load()
 
 client.setApiKey(process.env.SENDGRID_API_KEY)
-client.setDefaultHeader('User-Agent', 'staking-digest/1.0.0')
+client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
 async function formatData(_frequency, { delegator, rounds }) {
   const currentRound = +rounds[0].id
@@ -314,7 +314,6 @@ export const sendEmail = async function({
 module.exports = async function(agenda) {
   agenda.define('email', async (job, done) => {
     const { frequency, email, delegatorAddress } = job.attrs.data
-    console.log('hmm', job.attrs.data)
     await sendEmail({ frequency, email, delegatorAddress })
     done()
   })

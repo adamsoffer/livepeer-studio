@@ -33,7 +33,8 @@ app.prepare().then(async () => {
     console.log(`> Ready on http://localhost:${port}`)
   })
 
-  const tunnel = localtunnel(port, { subdomain: 'staking-digest' }, function(
+  // Set up localtunnel for testing sendgrid webhooks locally
+  const tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
     err,
     tunnel
   ) {

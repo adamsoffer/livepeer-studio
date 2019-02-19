@@ -1,3 +1,3 @@
-# Livepeer Staking Digest
+# Livepeer Token Alert
 
 Under construction
