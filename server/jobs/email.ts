@@ -242,6 +242,14 @@ export const sendEmail = async function({
   )
   let title = `Staking Digest (${frequency.charAt(0).toUpperCase() +
     frequency.slice(1)})`
+  let rewardCallText = data.missedRewardCalls
+    ? `Transcoder ${data.delegateAddress} did not call reward during ${
+        data.missedRewardCalls
+      } of the last ${totalRounds} rounds. Head to the forum and hold it accountable!`
+    : `Transcoder ${
+        data.delegateAddress
+      } called reward during each of the last ${totalRounds} rounds, maximizing your earnings potential.`
+
   let mailData = {
     personalizations: [
       {
@@ -257,7 +265,7 @@ export const sendEmail = async function({
         },
         dynamic_template_data: {
           title,
-          subject: `Livepeer Staking Digest for ${delegatorAddress}`,
+          subject: `Livepeer Token Alert for ${delegatorAddress}`,
           url: process.env.URL,
           frequency,
           monthFrom,
@@ -282,7 +290,8 @@ export const sendEmail = async function({
           poolFees: data.poolFees,
           missedRewardCalls: data.missedRewardCalls,
           delegateAddress: data.delegateAddress,
-          truncatedDelegateAddress
+          truncatedDelegateAddress,
+          rewardCallText
         }
       }
     ],

@@ -1,13 +1,23 @@
-import { useRef, useState, useEffect } from 'react'
+import { useState } from 'react'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormControl from '@material-ui/core/FormControl'
 import FormLabel from '@material-ui/core/FormLabel'
+import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
+import Layout from '../Layout'
 import styled from '@emotion/styled'
 import { Container } from '../../lib/helpers'
-import { Wrapper, Column, Heading, Subheading, Body } from './styles'
+import {
+  Background,
+  Form,
+  Wrapper,
+  Column,
+  Heading,
+  Subheading,
+  Body
+} from './styles'
 
 export const StyledRadioGroup: any = styled(RadioGroup)({
   '&&': {
@@ -23,60 +33,69 @@ export default () => {
   }
 
   return (
-    <Container>
-      <Wrapper>
-        <Column>
-          <Heading>// Staking Digest</Heading>
-          <Subheading>Stay Alert</Subheading>
-          <Body>
-            Sign up to receive a daily and weekly email digest with your earnings
-            transcoder stats.
-          </Body>
-        </Column>
-        <Column>
-          <form action="/confirmEmail" method="post">
-            <div>
-              <label htmlFor="email">Email:</label>
-              <input
-                type="email"
-                name="email"
-                defaultValue="adam@soffer.space"
-                placeholder="email"
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                name="delegatorAddress"
-                defaultValue="0x22b544d19ffe43c6083327271d9f39020da30c65"
-                placeholder="account"
-              />
-            </div>
-            <FormControl>
-              <FormLabel>Frequency</FormLabel>
-              <StyledRadioGroup
-                onChange={handleChange}
-                aria-label="Frequency"
-                name="frequency"
-                value={frequency}>
-                <FormControlLabel
-                  value="weekly"
-                  control={<Radio />}
-                  label="Weekly"
+    <Background>
+      <Layout>
+        <Container>
+          <Wrapper>
+            <Column>
+              <Heading>✧･ﾟ Livepeer Token Alerts ･ﾟ✧</Heading>
+              <Subheading>Get Notified</Subheading>
+              <Body>
+                Sign up to receive email alerts with your earnings and keep tabs
+                on how your transcoder is performing.
+              </Body>
+            </Column>
+            <Column>
+              <Form action="/confirmEmail" method="post">
+                <TextField
+                  id="email"
+                  required
+                  label="My email address is"
+                  name="email"
+                  placeholder="email"
+                  fullWidth
+                  InputLabelProps={{
+                    shrink: true
+                  }}
                 />
-                <FormControlLabel
-                  value="monthly"
-                  control={<Radio />}
-                  label="Monthly"
+                <TextField
+                  id="address"
+                  required
+                  label="My bonded address is"
+                  name="delegatorAddress"
+                  placeholder="e.g. 0x4bbeEB066eD09..."
+                  fullWidth
+                  InputLabelProps={{
+                    shrink: true
+                  }}
                 />
-              </StyledRadioGroup>
-            </FormControl>
-            <div>
-              <Button type="submit">SIGN UP</Button>
-            </div>
-          </form>
-        </Column>
-      </Wrapper>
-    </Container>
+                <FormControl>
+                  <FormLabel>Email me</FormLabel>
+                  <StyledRadioGroup
+                    onChange={handleChange}
+                    aria-label="Frequency"
+                    name="frequency"
+                    value={frequency}>
+                    <FormControlLabel
+                      value="weekly"
+                      control={<Radio />}
+                      label="Weekly"
+                    />
+                    <FormControlLabel
+                      value="monthly"
+                      control={<Radio />}
+                      label="Monthly"
+                    />
+                  </StyledRadioGroup>
+                </FormControl>
+                <div>
+                  <Button type="submit" variant="contained" color="primary">SIGN UP</Button>
+                </div>
+              </Form>
+            </Column>
+          </Wrapper>
+        </Container>
+      </Layout>
+    </Background>
   )
 }

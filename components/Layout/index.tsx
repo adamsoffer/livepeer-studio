@@ -2,9 +2,13 @@ import NextSeo from 'next-seo'
 import Header from '../Header'
 import Normalize from 'react-normalize'
 import Head from 'next/head'
+import grey from '@material-ui/core/colors/grey';
 import { Global, css } from '@emotion/core'
+import { withTheme } from '@material-ui/core/styles';
+import { ThemeProvider } from 'emotion-theming'
 
 type Props = {
+  theme?: any
   title?: string
   description?: string
   children: object
@@ -12,7 +16,7 @@ type Props = {
   url?: string
 }
 
-export default ({ title, description, children, url }: Props) => {
+export default withTheme()(({ theme, title, description, children, url }: Props) => {
   const config = {
     title: title,
     description: description,
@@ -23,10 +27,10 @@ export default ({ title, description, children, url }: Props) => {
     }
   }
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <Head>
         <link
-          href="https://fonts.googleapis.com/css?family=Poppins:400,400i,500,500i,600,600i,700,700i"
+          href="https://fonts.googleapis.com/css?family=Poppins:400,400i,500,500i,600,600i,700,700i|IBM+Plex+Mono:400,400i,500,500i,600,600i,700,700i"
           rel="stylesheet"
         />
       </Head>
@@ -36,6 +40,10 @@ export default ({ title, description, children, url }: Props) => {
         styles={css`
           * {
             font-family: 'Poppins', sans-serif;
+          }
+          body {
+            background-color: ${grey[900]};
+            color: ${theme.palette.common.white}
           }
           h1,
           h2,
@@ -49,6 +57,6 @@ export default ({ title, description, children, url }: Props) => {
       />
       <Header />
       {children}
-    </>
+    </ThemeProvider>
   )
-}
+})

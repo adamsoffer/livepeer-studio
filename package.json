@@ -25,6 +25,7 @@
     "big-integer": "^1.6.41",
     "body-parser": "^1.15.2",
     "dotenv": "^6.2.0",
+    "emotion-theming": "^10.0.7",
     "express": "^4.14.0",
     "moment": "^2.24.0",
     "morgan": "^1.7.0",

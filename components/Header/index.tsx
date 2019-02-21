@@ -1,5 +1,10 @@
-import {Root, Logo} from './styles'
+import { Root, Logo } from './styles'
+import { Container } from '../../lib/helpers'
 
 export default () => (
-  <Root><Logo src='/static/logo.svg' /></Root>
+  <Root>
+    <Container>
+      <Logo src="/static/logo.svg" />
+    </Container>
+  </Root>
 )
