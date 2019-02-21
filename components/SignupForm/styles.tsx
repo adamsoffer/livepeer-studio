@@ -3,19 +3,7 @@ import styled from '@emotion/styled'
 export const Background = styled.div({
   backgroundColor: 'rgba(34, 34, 34, .95)',
   position: 'relative',
-  height: '100vh',
-  '::after': {
-    position: 'absolute',
-    zIndex: -1,
-    left: 0,
-    top: 0,
-    width: '100%',
-    content: '""',
-    backgroundImage: 'url(/static/ocean.jpg)',
-    backgroundPosition: 'center',
-    backgroundSize: 'cover',
-    height: '100vh'
-  }
+  height: '100vh'
 })
 
 export const Wrapper = styled.div({
@@ -52,3 +40,13 @@ export const Body = styled.p({
 })
 
 export const Form = styled.form({})
+
+export const ButtonContainer = styled.div({
+  display: 'block',
+})
+
+export const Label = styled.div({
+  fontSize: 12,
+  marginTop: 16,
+  fontFamily: "'IBM Plex Mono', monospace"
+})

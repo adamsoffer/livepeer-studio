@@ -1,10 +1,11 @@
-import { Root, Logo } from './styles'
+import { Wrapper, Logo } from './styles'
 import { Container } from '../../lib/helpers'
-
+import RoundWidget from '../RoundWidget'
 export default () => (
-  <Root>
-    <Container>
+  <Container>
+    <Wrapper>
       <Logo src="/static/logo.svg" />
-    </Container>
-  </Root>
+      <RoundWidget />
+    </Wrapper>
+  </Container>
 )

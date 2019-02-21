@@ -1,5 +1,10 @@
 import SignupForm from '../components/SignupForm'
+import Layout from '../components/Layout'
 
 export default () => {
-  return <SignupForm />
+  return (
+    <Layout>
+      <SignupForm />
+    </Layout>
+  )
 }

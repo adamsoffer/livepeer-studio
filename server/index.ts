@@ -34,21 +34,23 @@ app.prepare().then(async () => {
   })
 
   // Set up localtunnel for testing sendgrid webhooks locally
-  const tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
-    err,
-    tunnel
-  ) {
-    if (err) {
-      // retry if error
-      shell.exec('./localtunnel.sh')
-      console.log(err)
-    } else {
-      console.log(tunnel.url)
-    }
-  })
+  if (dev) {
+    const tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
+      err,
+      tunnel
+    ) {
+      if (err) {
+        // retry if error
+        shell.exec('./localtunnel.sh')
+        console.log(err)
+      } else {
+        console.log(tunnel.url)
+      }
+    })
 
-  tunnel.on('close', function() {
-    shell.exec('./localtunnel.sh')
-    console.log('tunnel closed')
-  })
+    tunnel.on('close', function() {
+      shell.exec('./localtunnel.sh')
+      console.log('tunnel closed')
+    })
+  }
 })

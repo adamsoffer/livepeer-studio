@@ -13,12 +13,16 @@ const optIn = 'opt-in'
 // Send confirmation email to contact with link to confirm email
 export const sendConfirmation = async (req, res) => {
   let emailBody = req.body
-  let [response] = await client.request({
-    method: 'POST',
-    url: '/v3/mail/send',
-    body: prepareConfirmationEmail(emailBody)
-  })
-  res.sendStatus(response.statusCode)
+  try {
+    let [response] = await client.request({
+      method: 'POST',
+      url: '/v3/mail/send',
+      body: prepareConfirmationEmail(emailBody)
+    })
+    res.status(response.statusCode).send(response)
+  } catch (e) {
+    res.status(400).send(e)
+  }
 }
 
 export const dispatch = async function(req: any, res: any) {
