@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon -L -e ts,json",
     "build": "next build && tsc --project tsconfig.server.json",
-    "start": "NODE_ENV=production node .next/production-server/index.js"
+    "start": "NODE_ENV=production node .next/production-server/index.js",
+    "heroku-postbuild": "next build && tsc --project tsconfig.server.json"
   },
   "author": "",
   "license": "ISC",
