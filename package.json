@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "nodemon -L -e ts,json",
     "build": "next build && tsc --project tsconfig.server.json",
-    "start": "NODE_ENV=production node .next/production-server/index.js",
-    "heroku-postbuild": "next build && tsc --project tsconfig.server.json"
+    "start": "NODE_ENV=production node .next/production-server/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -25,7 +24,6 @@
     "axios": "^0.18.0",
     "big-integer": "^1.6.41",
     "body-parser": "^1.15.2",
-    "dotenv": "^6.2.0",
     "emotion-theming": "^10.0.7",
     "express": "^4.14.0",
     "moment": "^2.24.0",
@@ -34,6 +32,7 @@
     "next-mui-helper": "^1.2.0",
     "next-seo": "^1.10.0",
     "nodemon": "^1.9.2",
+    "now-env": "^3.1.0",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "react-normalize": "^0.2.9",

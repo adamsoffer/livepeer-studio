@@ -3,7 +3,7 @@ import agenda from '../agenda'
 import settings from '../settings'
 import url from 'url'
 
-require('dotenv').load()
+require('now-env')
 
 client.setApiKey(process.env.SENDGRID_API_KEY)
 client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')

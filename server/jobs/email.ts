@@ -4,7 +4,7 @@ import moment from 'moment'
 import * as Utils from 'web3-utils'
 import bigInt from 'big-integer'
 
-require('dotenv').load()
+require('now-env')
 
 client.setApiKey(process.env.SENDGRID_API_KEY)
 client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')

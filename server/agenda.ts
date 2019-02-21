@@ -2,7 +2,7 @@ import Agenda from 'agenda'
 import fs from 'fs'
 import path from 'path'
 
-require('dotenv').load()
+require('now-env')
 
 const mongoConnectionString = `mongodb+srv://${process.env.MONGO_USERNAME}:${
   process.env.MONGO_PASSWORD
