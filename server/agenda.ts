@@ -1,5 +1,6 @@
 import Agenda from 'agenda'
 import fs from 'fs'
+import path from 'path'
 
 require('dotenv').load()
 
@@ -20,7 +21,7 @@ const jobTypes = []
 
 fs.readdirSync('server/jobs').forEach(fileName => {
   jobTypes.push(fileName)
-  require('./jobs/' + fileName)(agenda)
+  require('./jobs/' + path.parse(fileName).name)(agenda)
 })
 
 if (jobTypes.length) {

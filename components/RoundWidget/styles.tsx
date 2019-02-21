@@ -6,7 +6,7 @@ export const Root = styled.div({
   color: '#FFF',
   borderRadius: 1000,
   borderStyle: 'solid',
-  padding: '4px 12px',
+  padding: '2px 12px',
   fontSize: 12,
   lineHeight: '24px',
   fontFamily: "'IBM Plex Mono', monospace",
