@@ -1,7 +1,7 @@
 {
   "name": "token-alert",
   "version": "0.0.0",
-  "description": "Livepeer Token Alert",
+  "description": "Livepeer Staking Alerts",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon -L -e ts,json",
@@ -24,8 +24,10 @@
     "axios": "^0.18.0",
     "big-integer": "^1.6.41",
     "body-parser": "^1.15.2",
+    "email-validator": "^2.0.4",
     "emotion-theming": "^10.0.7",
     "express": "^4.14.0",
+    "final-form": "^4.11.1",
     "moment": "^2.24.0",
     "morgan": "^1.7.0",
     "next": "^8.0.1",
@@ -35,6 +37,7 @@
     "now-env": "^3.1.0",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
+    "react-final-form-hooks": "^1.0.0",
     "react-normalize": "^0.2.9",
     "sendgrid": "^4.0.2",
     "shelljs": "^0.8.3",

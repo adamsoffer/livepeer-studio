@@ -13,25 +13,28 @@ async function formatData(_frequency, { delegator, rounds }) {
   let currentRound = +rounds[0].id
   let { shares, delegate } = delegator
   let { pools } = delegate
+  let sharesBetweenDates = []
 
   let dateFrom = moment
     .utc()
     .startOf('day')
-    .subtract(9, 'd')
+    .subtract(7, 'd')
     .unix()
 
   let dateTo = moment
     .utc()
     .endOf('day')
-    .subtract(3, 'd')
+    .subtract(1, 'd')
     .unix()
 
   // Get all the delegator's shares between the time frame specified (daily vs weekly)
-  let sharesBetweenDates = shares.filter(function(share) {
-    return (
-      +share.round.id !== currentRound && +share.round.timestamp >= dateFrom
-    )
-  })
+  if (shares.length) {
+    sharesBetweenDates = shares.filter(function(share) {
+      return (
+        +share.round.id !== currentRound && +share.round.timestamp >= dateFrom
+      )
+    })
+  }
 
   // Add up all the delegator's reward tokens earned during that time frame
   let shareRewardTokens = parseFloat(
@@ -90,14 +93,14 @@ async function formatData(_frequency, { delegator, rounds }) {
     )
   ).toFixed(2)
 
-  let roundFrom = sharesBetweenDates.reduce(
+  let roundFrom = poolsBetweenDates.reduce(
     (min, p) => (+p.round.id < +min ? +p.round.id : +min),
-    +sharesBetweenDates[0].round.id
+    +poolsBetweenDates[0].round.id
   )
 
-  let roundTo = sharesBetweenDates.reduce(
+  let roundTo = poolsBetweenDates.reduce(
     (max, p) => (+p.round.id > +max ? +p.round.id : +max),
-    +sharesBetweenDates[0].round.id
+    +poolsBetweenDates[0].round.id
   )
 
   return {
@@ -265,7 +268,7 @@ export const sendEmail = async function({
         },
         dynamic_template_data: {
           title,
-          subject: `Livepeer Token Alert for ${delegatorAddress}`,
+          subject: `Livepeer Staking Alert for ${delegatorAddress}`,
           url: process.env.URL,
           frequency,
           monthFrom,

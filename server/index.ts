@@ -19,7 +19,7 @@ app.prepare().then(async () => {
   server.use(
     '/dash',
     Agendash(agenda, {
-      title: 'Staking Digest'
+      title: 'Staking Alerts'
     })
   )
   server.post('/confirmEmail', sendConfirmation)

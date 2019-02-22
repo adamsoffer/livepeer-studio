@@ -10,7 +10,7 @@ export const Wrapper = styled.header({
 })
 
 export const Logo = styled.img({
-  width: 100
+  width: 130
 })
 
 

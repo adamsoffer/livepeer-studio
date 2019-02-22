@@ -1,7 +1,7 @@
 import client from '@sendgrid/client'
-import agenda from '../agenda'
-import settings from '../settings'
 import url from 'url'
+import moment from 'moment'
+import agenda from '../agenda'
 
 require('now-env')
 
@@ -13,6 +13,7 @@ const optIn = 'opt-in'
 // Send confirmation email to contact with link to confirm email
 export const sendConfirmation = async (req, res) => {
   let emailBody = req.body
+  console.log(emailBody.email)
   try {
     let [response] = await client.request({
       method: 'POST',
@@ -81,13 +82,17 @@ async function addUser({ frequency, email, delegatorAddress, type, timeSent }) {
 }
 
 async function createEmailJob({ frequency, email, delegatorAddress }) {
+  let everyFridayAt7am = '0 7 * * 5'
+  let firstOfEveryMonthAt7am = '0 7 1 * *'
   let job = await agenda.create('email', {
     frequency,
     email,
     delegatorAddress
   })
   job.unique({ frequency, email, delegatorAddress })
-  job.repeatEvery('0 7 * * 1')
+  job.repeatEvery(
+    `${frequency == 'weekly' ? everyFridayAt7am : firstOfEveryMonthAt7am}`
+  )
   job.save()
 }
 
@@ -134,13 +139,10 @@ async function deleteRecipientFromList({ list_id, recipient_id }) {
   }
 }
 
-function prepareConfirmationEmail(reqBody: any) {
+function prepareConfirmationEmail(reqBody) {
   let subject = 'Please Confirm Your Email Address'
-  let link = `<a href="${settings.url}/success">this link</a>`
-  let mailText =
-    'Thanks for signing up! Click ' +
-    link +
-    ' to sign up!  This link will be active for 24 hours.'
+  let confirmationLink = `${process.env.URL}/success`
+  let todaysDate = moment().format('MMM D, YYYY')
 
   let emailBody = {
     personalizations: [
@@ -154,19 +156,24 @@ function prepareConfirmationEmail(reqBody: any) {
         custom_args: {
           type: optIn,
           timeSent: String(Date.now())
+        },
+        dynamic_template_data: {
+          todaysDate,
+          confirmationLink,
+          frequency: reqBody.frequency,
+          delegatorAddress: reqBody.delegatorAddress
         }
       }
     ],
     from: {
-      email: settings.senderEmail,
-      name: settings.senderName
+      email: 'noreply@livepeer.org',
+      name: 'Livepeer'
     },
-    content: [
-      {
-        type: 'text/html',
-        value: mailText
-      }
-    ]
+    reply_to: {
+      email: 'noreply@livepeer.org',
+      name: 'Livepeer'
+    },
+    template_id: 'd-b3812189ecf74b92aefe1d98b34ec054'
   }
 
   for (let key in reqBody) {

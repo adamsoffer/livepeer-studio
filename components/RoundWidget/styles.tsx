@@ -1,14 +1,13 @@
 import styled from '@emotion/styled'
 
 export const Root = styled.div({
-  borderWidth: 2,
-  borderColor: '#FFF', 
-  color: '#FFF',
+  //borderColor: '#FFF', 
+  //borderStyle: 'solid',
+  //borderWidth: 2,
   borderRadius: 1000,
-  borderStyle: 'solid',
-  padding: '2px 12px',
-  fontSize: 12,
-  lineHeight: '24px',
+  color: '#FFF',
   fontFamily: "'IBM Plex Mono', monospace",
-  fontWeight: 900
+  fontSize: 14,
+  fontWeight: 900,
+  padding: '6px 12px',
 })
