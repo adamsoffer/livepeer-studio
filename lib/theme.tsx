@@ -72,7 +72,7 @@ const theme = {
         paddingRight: 24
       },
       label: {
-        fontFamily: "'IBM Plex Mono', monospace",
+        fontFamily: "'IBM Plex Mono', monospace"
       }
     }
   }

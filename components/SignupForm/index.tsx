@@ -112,9 +112,6 @@ export default () => {
                     delegatorAddress.meta.touched && delegatorAddress.meta.error
                   )
                 }
-                inputProps={{
-                  pattern: '^0x[a-fA-F0-9]{40}$'
-                }}
                 label="My bonded Ethereum address is"
                 name="delegatorAddress"
                 placeholder="e.g. 0x4bbeEB066eD09..."

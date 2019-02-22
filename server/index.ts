@@ -2,17 +2,17 @@ import Agendash from 'agendash'
 import bodyParser from 'body-parser'
 import express from 'express'
 import next from 'next'
-import agenda from './agenda'
-import { dispatch, sendConfirmation } from './controllers/users'
 import shell from 'shelljs'
+import { dispatch, sendConfirmation } from './controllers/users'
+import agenda from './agenda'
 
-const port = parseInt(process.env.PORT, 10) || 3000
-const dev = process.env.NODE_ENV !== 'production'
-const app = next({ dev })
-const handle = app.getRequestHandler()
+let port = parseInt(process.env.PORT, 10) || 3000
+let dev = process.env.NODE_ENV !== 'production'
+let app = next({ dev })
+let handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
-  const server = express()
+  let server = express()
   server.use(bodyParser.json())
   server.use(bodyParser.urlencoded({ extended: true }))
 
@@ -34,8 +34,8 @@ app.prepare().then(async () => {
 
   // Set up localtunnel for testing sendgrid webhooks locally
   if (dev) {
-    const localtunnel = require('localtunnel')
-    const tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
+    let localtunnel = require('localtunnel')
+    let tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
       err,
       tunnel
     ) {
