@@ -1,5 +1,5 @@
 import { useForm, useField } from 'react-final-form-hooks'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import * as Utils from 'web3-utils'
 import Button from '@material-ui/core/Button'
 import EmailValidator from 'email-validator'
@@ -11,6 +11,10 @@ import RadioGroup from '@material-ui/core/RadioGroup'
 import styled from '@emotion/styled'
 import TextField from '@material-ui/core/TextField'
 import axios from 'axios'
+import Modal from '@material-ui/core/Modal'
+import Typography from '@material-ui/core/Typography'
+import Paper from '@material-ui/core/Paper'
+import CloseIcon from '@material-ui/icons/Close'
 import { Container } from '../../lib/helpers'
 import {
   Background,
@@ -60,19 +64,63 @@ const validate = values => {
 }
 
 export default () => {
-  const { form, handleSubmit, submitting } = useForm({
+  let [open, setOpen] = useState(false)
+  let { form, handleSubmit, submitting, submitSucceeded } = useForm({
     onSubmit,
     validate,
     initialValues: {
       frequency: 'weekly'
     }
   })
-  const email = useField('email', form)
-  const delegatorAddress = useField('delegatorAddress', form)
-  const frequency = useField('frequency', form)
+
+  let email = useField('email', form)
+  let delegatorAddress = useField('delegatorAddress', form)
+  let frequency = useField('frequency', form)
+
+  useEffect(() => {
+    if (submitSucceeded) {
+      setOpen(true)
+    }
+  }, [submitSucceeded])
 
   return (
     <Background>
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+        open={open}
+        onClose={() => setOpen(false)}>
+        <Paper
+          elevation={5}
+          style={{
+            maxWidth: 600,
+            outline: 'none',
+            padding: '32px 24px',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
+          }}>
+          <CloseIcon
+            onClick={() => setOpen(false)}
+            style={{
+              cursor: 'pointer',
+              position: 'absolute',
+              right: 16,
+              top: 16
+            }}
+          />
+          <Typography
+            style={{ fontFamily: 'Poppins', fontWeight: 600, marginBottom: 24 }}
+            variant="h5"
+            id="modal-title">
+            Verify Your Email
+          </Typography>
+          <Typography variant="subtitle1" id="modal-description">
+            A verification email has been sent to your email address. Please confirm it to complete the process.
+          </Typography>
+        </Paper>
+      </Modal>
       <Container>
         <Wrapper>
           <Column>
@@ -126,7 +174,7 @@ export default () => {
                 <StyledRadioGroup
                   defaultValue="weekly"
                   aria-label="Frequency"
-                  onChange={(e) => frequency.input.onChange(e.target.value)}
+                  onChange={e => frequency.input.onChange(e.target.value)}
                   name="frequency">
                   <FormControlLabel
                     value="weekly"
