@@ -5,7 +5,7 @@
     "MONGO_DB": "@token-alerts-mongo-db",
     "MONGO_USERNAME": "@token-alerts-mongo-username",
     "MONGO_PASSWORD": "@token-alerts-mongo-password",
-    "URL": "https://livepeer-staking-alerts.now.sh",
+    "URL": "https://staking-alerts.now.sh",
     "GRAPH_API": "https://api.thegraph.com/subgraphs/name/adamsoffer/livepeer-canary"
   }
 }

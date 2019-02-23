@@ -13,7 +13,6 @@ const optIn = 'opt-in'
 // Send confirmation email to contact with link to confirm email
 export const sendConfirmation = async (req, res) => {
   let emailBody = req.body
-  console.log(emailBody.email)
   try {
     let [response] = await client.request({
       method: 'POST',
@@ -37,8 +36,10 @@ export const dispatch = async function(req: any, res: any) {
     case '/unsubscribe':
       await unsubscribe({ ...req.body[0] })
       break
-    case '/success':
-      await addUser({ ...req.body[0] })
+    case '/':
+      if (parsedUrl.query.verify) {
+        await addUser({ ...req.body[0] })
+      }
       break
     default:
       return
@@ -61,23 +62,31 @@ async function cancelJob({ frequency, email, delegatorAddress }) {
 }
 
 async function unsubscribe({ frequency, email, delegatorAddress }) {
-  let recipient_id = await getRecipientId(email)
-  let list_id = await getListId({ recipient_id, frequency, delegatorAddress })
+  try {
+    let recipient_id = await getRecipientId(email)
+    let list_id = await getListId({ recipient_id, frequency, delegatorAddress })
 
-  await deleteRecipientFromList({ list_id, recipient_id })
-  await cancelJob({ frequency, email, delegatorAddress })
+    await deleteRecipientFromList({ list_id, recipient_id })
+    await cancelJob({ frequency, email, delegatorAddress })
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 // Create new contact and add contact to given list
 async function addUser({ frequency, email, delegatorAddress, type, timeSent }) {
-  let contactID = await createRecipient({
-    type,
-    timeSent,
-    email
-  })
-  if (contactID) {
-    await addRecipientToList({ contactID, delegatorAddress, frequency })
-    await createEmailJob({ frequency, email, delegatorAddress })
+  try {
+    let contactID = await createRecipient({
+      type,
+      timeSent,
+      email
+    })
+    if (contactID) {
+      await addRecipientToList({ contactID, delegatorAddress, frequency })
+      await createEmailJob({ frequency, email, delegatorAddress })
+    }
+  } catch (e) {
+    console.log(e)
   }
 }
 
@@ -141,7 +150,9 @@ async function deleteRecipientFromList({ list_id, recipient_id }) {
 
 function prepareConfirmationEmail(reqBody) {
   let subject = 'Please Confirm Your Email Address'
-  let confirmationLink = `${process.env.URL}/success`
+  let confirmationLink = `${process.env.URL}/?verify=true&frequency=${
+    reqBody.frequency
+  }`
   let todaysDate = moment().format('MMM D, YYYY')
 
   let emailBody = {

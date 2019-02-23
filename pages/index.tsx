@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography'
 import Paper from '@material-ui/core/Paper'
 import CloseIcon from '@material-ui/icons/Close'
 import { withRouter } from 'next/router'
+import Router from 'next/router'
 
 export default withRouter(({ router: { query } }) => {
   let [open, setOpen] = useState(false)
@@ -15,8 +16,8 @@ export default withRouter(({ router: { query } }) => {
     <Layout>
       <SignupForm />
       <Modal
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
         open={isVerified || open}
         onClose={() => setOpen(false)}>
         <Paper
@@ -31,7 +32,7 @@ export default withRouter(({ router: { query } }) => {
             transform: 'translate(-50%, -50%)'
           }}>
           <CloseIcon
-            onClick={() => setOpen(false)}
+            onClick={() => Router.push('/')}
             style={{
               cursor: 'pointer',
               position: 'absolute',
@@ -45,12 +46,12 @@ export default withRouter(({ router: { query } }) => {
             id="modal-title">
             Verification Successful
           </Typography>
-          <Typography variant="subtitle1" id="simple-modal-description">
-            {`Your email has been verified. We will send you an email ${
+          <Typography variant="subtitle1" id="modal-description">
+            {`Your email has been verified. We will send you an email with your earnings ${
               query.frequency == 'weekly'
                 ? 'every Friday at 12PM UTC (7AM EST)'
-                : 'on the 1st of every month at at 12PM UTC (7AM EST)'
-            } with your earnings.`}
+                : 'on the 1st of every month at 12PM UTC (7AM EST)'
+            }.`}
           </Typography>
         </Paper>
       </Modal>

@@ -35,7 +35,7 @@ const onSubmit = async values => {
   try {
     const response = await axios.post('/confirmEmail', {
       email: values.email,
-      delegatorAddress: values.delegatorAddress,
+      delegatorAddress: values.delegatorAddress.toLowerCase(),
       frequency: values.frequency
     })
     console.log(response)
@@ -69,6 +69,7 @@ export default () => {
   })
   const email = useField('email', form)
   const delegatorAddress = useField('delegatorAddress', form)
+  const frequency = useField('frequency', form)
 
   return (
     <Background>
@@ -121,11 +122,11 @@ export default () => {
                 }}
               />
               <FormControl>
-                <FormLabel>Email me</FormLabel>
+                <FormLabel>Email me*</FormLabel>
                 <StyledRadioGroup
                   defaultValue="weekly"
                   aria-label="Frequency"
-                  onChange={(e) => form.initialize({frequency: e.target.value})}
+                  onChange={(e) => frequency.input.onChange(e.target.value)}
                   name="frequency">
                   <FormControlLabel
                     value="weekly"

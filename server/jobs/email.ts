@@ -9,29 +9,58 @@ require('now-env')
 client.setApiKey(process.env.SENDGRID_API_KEY)
 client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
-async function formatData(_frequency, { delegator, rounds }) {
+async function formatData(frequency, { delegator, rounds }) {
   let currentRound = +rounds[0].id
   let { shares, delegate } = delegator
   let { pools } = delegate
   let sharesBetweenDates = []
+  let poolsBetweenDates = []
+  let roundsBetweenDates = []
 
-  let dateFrom = moment
+  let beginningOfMonth = moment
     .utc()
-    .startOf('day')
+    .subtract(1, 'months')
+    .date(1)
+    .unix()
+
+  let endOfMonth = moment
+    .utc()
+    .subtract(1, 'months')
+    .endOf('month')
+    .unix()
+
+  let beginningOfWeek = moment
+    .utc()
+    .endOf('day')
     .subtract(7, 'd')
     .unix()
 
-  let dateTo = moment
+  let endOfWeek = moment
     .utc()
     .endOf('day')
-    .subtract(1, 'd')
+    .subtract(0, 'd')
     .unix()
+
+  let dateFrom = frequency == 'weekly' ? beginningOfWeek : beginningOfMonth
+  let dateTo = frequency == 'weekly' ? endOfWeek : endOfMonth
 
   // Get all the delegator's shares between the time frame specified (daily vs weekly)
   if (shares.length) {
-    sharesBetweenDates = shares.filter(function(share) {
+    sharesBetweenDates = shares.filter((share: any) => {
       return (
-        +share.round.id !== currentRound && +share.round.timestamp >= dateFrom
+        +share.round.id !== currentRound &&
+        +share.round.timestamp >= dateFrom &&
+        +share.round.timestamp <= dateTo
+      )
+    })
+  }
+
+  if (rounds.length) {
+    roundsBetweenDates = rounds.filter((round: any) => {
+      return (
+        +round.id !== currentRound &&
+        +round.timestamp >= dateFrom &&
+        +round.timestamp <= dateTo
       )
     })
   }
@@ -40,7 +69,7 @@ async function formatData(_frequency, { delegator, rounds }) {
   let shareRewardTokens = parseFloat(
     Utils.fromWei(
       sharesBetweenDates
-        .reduce(function(acc, obj) {
+        .reduce((acc: any, obj: any) => {
           return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
         }, 0)
         .toString(),
@@ -52,7 +81,7 @@ async function formatData(_frequency, { delegator, rounds }) {
   let shareFees = parseFloat(
     Utils.fromWei(
       sharesBetweenDates
-        .reduce(function(acc, obj) {
+        .reduce((acc: any, obj: any) => {
           return bigInt(acc).plus(obj.fees ? obj.fees : 0)
         }, 0)
         .toString(),
@@ -61,9 +90,15 @@ async function formatData(_frequency, { delegator, rounds }) {
   ).toFixed(2)
 
   // Get all the delegate's pools between the time frame specified (daily vs weekly)
-  let poolsBetweenDates = pools.filter(function(pool) {
-    return +pool.round.id !== currentRound && +pool.round.timestamp >= dateFrom
-  })
+  if (pools.length) {
+    poolsBetweenDates = pools.filter(pool => {
+      return (
+        +pool.round.id !== currentRound &&
+        +pool.round.timestamp >= dateFrom &&
+        +pool.round.timestamp <= dateTo
+      )
+    })
+  }
 
   let missedRewardCalls = poolsBetweenDates.filter(
     pool => pool.rewardTokens === null
@@ -73,7 +108,7 @@ async function formatData(_frequency, { delegator, rounds }) {
   let poolRewardTokens = parseFloat(
     Utils.fromWei(
       poolsBetweenDates
-        .reduce(function(acc, obj) {
+        .reduce((acc: any, obj: any) => {
           return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
         }, 0)
         .toString(),
@@ -85,7 +120,7 @@ async function formatData(_frequency, { delegator, rounds }) {
   let poolFees = parseFloat(
     Utils.fromWei(
       poolsBetweenDates
-        .reduce(function(acc, obj) {
+        .reduce((acc: any, obj: any) => {
           return bigInt(acc).plus(obj.fees ? obj.fees : 0)
         }, 0)
         .toString(),
@@ -93,14 +128,14 @@ async function formatData(_frequency, { delegator, rounds }) {
     )
   ).toFixed(2)
 
-  let roundFrom = poolsBetweenDates.reduce(
-    (min, p) => (+p.round.id < +min ? +p.round.id : +min),
-    +poolsBetweenDates[0].round.id
+  let roundFrom = roundsBetweenDates.reduce(
+    (min, p) => (+p.id < +min ? +p.id : +min),
+    +roundsBetweenDates[0].id
   )
 
-  let roundTo = poolsBetweenDates.reduce(
-    (max, p) => (+p.round.id > +max ? +p.round.id : +max),
-    +poolsBetweenDates[0].round.id
+  let roundTo = roundsBetweenDates.reduce(
+    (max, p) => (+p.id > +max ? +p.id : +max),
+    +roundsBetweenDates[0].id
   )
 
   return {
@@ -172,7 +207,7 @@ export const queryGraph = async function(frequency, delegatorAddress) {
   ).join()
 
   let query = `{
-    rounds(first: 1, orderDirection: desc, orderBy: timestamp) {
+    rounds(first: 40, orderDirection: desc, orderBy: timestamp) {
       id
       timestamp
     }
