@@ -2,6 +2,7 @@ import client from '@sendgrid/client'
 import url from 'url'
 import moment from 'moment'
 import agenda from '../agenda'
+import settings from '../settings'
 
 require('now-env')
 
@@ -150,7 +151,7 @@ async function deleteRecipientFromList({ list_id, recipient_id }) {
 
 function prepareConfirmationEmail(reqBody) {
   let subject = 'Please Confirm Your Email Address'
-  let confirmationLink = `${process.env.URL}/?verify=true&frequency=${
+  let confirmationLink = `${settings.url}/?verify=true&frequency=${
     reqBody.frequency
   }`
   let todaysDate = moment().format('MMM D, YYYY')

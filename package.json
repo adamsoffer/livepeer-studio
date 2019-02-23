@@ -40,6 +40,7 @@
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "react-final-form-hooks": "^1.0.0",
+    "react-google-recaptcha": "^1.0.5",
     "react-normalize": "^0.2.9",
     "sendgrid": "^4.0.2",
     "shelljs": "^0.8.3",

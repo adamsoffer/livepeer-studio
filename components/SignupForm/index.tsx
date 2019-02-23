@@ -1,6 +1,7 @@
 import { useForm, useField } from 'react-final-form-hooks'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as Utils from 'web3-utils'
+import ReCAPTCHA from "react-google-recaptcha";
 import Button from '@material-ui/core/Button'
 import EmailValidator from 'email-validator'
 import FormControl from '@material-ui/core/FormControl'
@@ -35,8 +36,11 @@ export const StyledRadioGroup: any = styled(RadioGroup)({
   }
 })
 
+const recaptchaRef: any = React.createRef();
+
 const onSubmit = async values => {
   try {
+    recaptchaRef.current.execute();
     const response = await axios.post('/confirmEmail', {
       email: values.email,
       delegatorAddress: values.delegatorAddress.toLowerCase(),
@@ -170,7 +174,7 @@ export default () => {
                 }}
               />
               <FormControl>
-                <FormLabel>Email me*</FormLabel>
+                <FormLabel>Email me</FormLabel>
                 <StyledRadioGroup
                   defaultValue="weekly"
                   aria-label="Frequency"
@@ -190,6 +194,11 @@ export default () => {
                   />
                 </StyledRadioGroup>
               </FormControl>
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                size="invisible"
+                sitekey="6LeEfJMUAAAAADy6m3uGNTW0go3Qvp6zDQyuCr-X"
+              />
               <ButtonContainer>
                 <Button
                   disabled={submitting}

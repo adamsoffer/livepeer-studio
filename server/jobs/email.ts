@@ -3,6 +3,7 @@ import axios from 'axios'
 import moment from 'moment'
 import * as Utils from 'web3-utils'
 import bigInt from 'big-integer'
+import settings from '../settings'
 
 require('now-env')
 
@@ -169,7 +170,7 @@ export const getInitialData = async function(delegatorAddress) {
 
   try {
     let { data } = await axios.post(
-      process.env.GRAPH_API,
+      settings.graphAPI,
       {
         query: query
       },
@@ -237,7 +238,7 @@ export const queryGraph = async function(frequency, delegatorAddress) {
 
   try {
     let { data } = await axios.post(
-      process.env.GRAPH_API,
+      settings.graphAPI,
       {
         query: query
       },
@@ -304,7 +305,7 @@ export const sendEmail = async function({
         dynamic_template_data: {
           title,
           subject: `Livepeer Staking Alert for ${delegatorAddress}`,
-          url: process.env.URL,
+          url: settings.url,
           frequency,
           monthFrom,
           monthTo,
@@ -324,6 +325,7 @@ export const sendEmail = async function({
           roundTo: data.roundTo,
           shareRewardTokens: data.shareRewardTokens,
           shareFees: data.shareFees,
+          totalPools: data.pools.length,
           poolRewardTokens: data.poolRewardTokens,
           poolFees: data.poolFees,
           missedRewardCalls: data.missedRewardCalls,
