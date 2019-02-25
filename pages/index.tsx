@@ -1,19 +1,22 @@
-import { useState } from 'react'
-import SignupForm from '../components/SignupForm'
-import Layout from '../components/Layout'
 import Modal from '@material-ui/core/Modal'
-import Typography from '@material-ui/core/Typography'
 import Paper from '@material-ui/core/Paper'
+import Typography from '@material-ui/core/Typography'
 import CloseIcon from '@material-ui/icons/Close'
-import { withRouter } from 'next/router'
-import Router from 'next/router'
+import axios from 'axios'
+import Router, { withRouter } from 'next/router'
+import { useState } from 'react'
+import Layout from '../components/Layout'
+import SignupForm from '../components/SignupForm'
+import settings from '../server/settings'
+import Header from '../components/Header'
 
-export default withRouter(({ router: { query } }) => {
+const Page: any = ({ currentRound, router: { query } }) => {
   let [open, setOpen] = useState(false)
   let isVerified = query.verify == 'true'
 
   return (
     <Layout>
+      <Header currentRound={currentRound} />
       <SignupForm />
       <Modal
         aria-labelledby="modal-title"
@@ -57,4 +60,31 @@ export default withRouter(({ router: { query } }) => {
       </Modal>
     </Layout>
   )
-})
+}
+
+Page.getInitialProps = async () => {
+  let query = `{
+    rounds(first: 1, orderDirection: desc, orderBy: timestamp) {
+      id
+    }
+  }`
+
+  try {
+    let { data } = await axios.post(
+      settings.graphAPI,
+      {
+        query
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return { currentRound: data.data.rounds[0].id }
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+export default withRouter(Page)

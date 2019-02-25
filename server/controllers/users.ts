@@ -185,7 +185,7 @@ function prepareConfirmationEmail(reqBody) {
       email: 'noreply@livepeer.org',
       name: 'Livepeer'
     },
-    template_id: 'd-b3812189ecf74b92aefe1d98b34ec054'
+    template_id: settings.confirmationTemplateID
   }
 
   for (let key in reqBody) {

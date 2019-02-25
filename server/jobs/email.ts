@@ -10,14 +10,7 @@ require('now-env')
 client.setApiKey(process.env.SENDGRID_API_KEY)
 client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
-async function formatData(frequency, { delegator, rounds }) {
-  let currentRound = +rounds[0].id
-  let { shares, delegate } = delegator
-  let { pools } = delegate
-  let sharesBetweenDates = []
-  let poolsBetweenDates = []
-  let roundsBetweenDates = []
-
+function getDates(frequency) {
   let beginningOfMonth = moment
     .utc()
     .subtract(1, 'months')
@@ -45,123 +38,174 @@ async function formatData(frequency, { delegator, rounds }) {
   let dateFrom = frequency == 'weekly' ? beginningOfWeek : beginningOfMonth
   let dateTo = frequency == 'weekly' ? endOfWeek : endOfMonth
 
-  // Get all the delegator's shares between the time frame specified (daily vs weekly)
-  if (shares.length) {
-    sharesBetweenDates = shares.filter((share: any) => {
-      return (
-        +share.round.id !== currentRound &&
-        +share.round.timestamp >= dateFrom &&
-        +share.round.timestamp <= dateTo
-      )
-    })
+  return {
+    dateFrom,
+    dateTo
   }
+}
 
-  if (rounds.length) {
-    roundsBetweenDates = rounds.filter((round: any) => {
+async function formatData(data) {
+  let sharesBetweenDates = []
+  let poolsBetweenDates = []
+  let roundsBetweenDates = []
+  let missedRewardCalls: number
+  let roundFrom: number
+  let roundTo: number
+  let totalRounds: number
+  let shareRewardTokens: string
+  let shareFees: string
+  let averageShareRewardTokens: string
+  let averageShareFees: string
+  let poolRewardTokens: string
+  let poolFees: string
+  let delegatorAddress: string
+  let delegateAddress: string
+  let truncatedDelegateAddress: string
+  let currentRound = +data.rounds[0].id
+  let status = data.delegator && data.delegator.delegate ? 'Bonded' : 'Unbonded'
+  let { dateFrom, dateTo } = getDates(data.frequency)
+  let formattedDates = formatDates({ dateFrom, dateTo })
+
+  if (data.rounds.length) {
+    roundsBetweenDates = data.rounds.filter((round: any) => {
       return (
         +round.id !== currentRound &&
         +round.timestamp >= dateFrom &&
         +round.timestamp <= dateTo
       )
     })
+    roundFrom = roundsBetweenDates.reduce(
+      (min, p) => (+p.id < +min ? +p.id : +min),
+      +roundsBetweenDates[0].id
+    )
+
+    roundTo = roundsBetweenDates.reduce(
+      (max, p) => (+p.id > +max ? +p.id : +max),
+      +roundsBetweenDates[0].id
+    )
+
+    totalRounds = roundTo - roundFrom + 1
   }
 
-  // Add up all the delegator's reward tokens earned during that time frame
-  let shareRewardTokens = parseFloat(
-    Utils.fromWei(
-      sharesBetweenDates
-        .reduce((acc: any, obj: any) => {
-          return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
-        }, 0)
-        .toString(),
-      'ether'
-    )
-  ).toFixed(2)
+  if (data.delegator) {
+    delegatorAddress = data.delegator.id
+  }
 
-  // Add up all the delegator's fees earned during that time frame
-  let shareFees = parseFloat(
-    Utils.fromWei(
-      sharesBetweenDates
-        .reduce((acc: any, obj: any) => {
-          return bigInt(acc).plus(obj.fees ? obj.fees : 0)
-        }, 0)
-        .toString(),
-      'ether'
+  if (status == 'Bonded') {
+    delegateAddress = data.delegator.delegate.id
+    truncatedDelegateAddress = delegateAddress.replace(
+      delegateAddress.slice(5, -3),
+      '...'
     )
-  ).toFixed(2)
+  }
+
+  // Get all the delegator's shares between the time frame specified (weekly vs monthly)
+  if (data.delegator && data.delegator.shares.length) {
+    sharesBetweenDates = data.delegator.shares.filter((share: any) => {
+      return (
+        +share.round.id !== currentRound &&
+        +share.round.timestamp >= dateFrom &&
+        +share.round.timestamp <= dateTo
+      )
+    })
+    // Add up all the delegator's reward tokens earned during that time frame
+    shareRewardTokens = parseFloat(
+      Utils.fromWei(
+        sharesBetweenDates
+          .reduce((acc: any, obj: any) => {
+            return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
+          }, 0)
+          .toString(),
+        'ether'
+      )
+    ).toFixed(2)
+
+    // Add up all the delegator's fees earned during that time frame
+    shareFees = parseFloat(
+      Utils.fromWei(
+        sharesBetweenDates
+          .reduce((acc: any, obj: any) => {
+            return bigInt(acc).plus(obj.fees ? obj.fees : 0)
+          }, 0)
+          .toString(),
+        'ether'
+      )
+    ).toFixed(2)
+
+    averageShareRewardTokens = (+shareRewardTokens / totalRounds).toFixed(2)
+    averageShareFees = (+shareFees / totalRounds).toFixed(2)
+  }
 
   // Get all the delegate's pools between the time frame specified (daily vs weekly)
-  if (pools.length) {
-    poolsBetweenDates = pools.filter(pool => {
+  if (
+    data.delegator &&
+    data.delegator.delegate &&
+    data.delegator.delegate.pools.length
+  ) {
+    poolsBetweenDates = data.delegator.delegate.pools.filter(pool => {
       return (
         +pool.round.id !== currentRound &&
         +pool.round.timestamp >= dateFrom &&
         +pool.round.timestamp <= dateTo
       )
     })
+    missedRewardCalls = poolsBetweenDates.filter(
+      pool => pool.rewardTokens === null
+    ).length
+
+    // Add up all the delegate's claimed reward tokens in the pools during that time frame
+    poolRewardTokens = parseFloat(
+      Utils.fromWei(
+        poolsBetweenDates
+          .reduce((acc: any, obj: any) => {
+            return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
+          }, 0)
+          .toString(),
+        'ether'
+      )
+    ).toFixed(2)
+
+    // Add up all the delegate's claimed fees in the pools during that time frame
+    poolFees = parseFloat(
+      Utils.fromWei(
+        poolsBetweenDates
+          .reduce((acc: any, obj: any) => {
+            return bigInt(acc).plus(obj.fees ? obj.fees : 0)
+          }, 0)
+          .toString(),
+        'ether'
+      )
+    ).toFixed(2)
   }
 
-  let missedRewardCalls = poolsBetweenDates.filter(
-    pool => pool.rewardTokens === null
-  ).length
-
-  // Add up all the delegate's claimed reward tokens in the pools during that time frame
-  let poolRewardTokens = parseFloat(
-    Utils.fromWei(
-      poolsBetweenDates
-        .reduce((acc: any, obj: any) => {
-          return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
-        }, 0)
-        .toString(),
-      'ether'
-    )
-  ).toFixed(2)
-
-  // Add up all the delegate's claimed fees in the pools during that time frame
-  let poolFees = parseFloat(
-    Utils.fromWei(
-      poolsBetweenDates
-        .reduce((acc: any, obj: any) => {
-          return bigInt(acc).plus(obj.fees ? obj.fees : 0)
-        }, 0)
-        .toString(),
-      'ether'
-    )
-  ).toFixed(2)
-
-  let roundFrom = roundsBetweenDates.reduce(
-    (min, p) => (+p.id < +min ? +p.id : +min),
-    +roundsBetweenDates[0].id
-  )
-
-  let roundTo = roundsBetweenDates.reduce(
-    (max, p) => (+p.id > +max ? +p.id : +max),
-    +roundsBetweenDates[0].id
-  )
-
   return {
-    dateFrom,
-    dateTo,
     roundFrom,
     roundTo,
+    totalRounds,
     missedRewardCalls,
     pools: poolsBetweenDates,
     shares: sharesBetweenDates,
+    averageShareRewardTokens,
+    averageShareFees,
     poolRewardTokens,
     poolFees: poolFees,
     shareRewardTokens,
     shareFees,
-    delegatorAddress: delegator.id,
-    delegateAddress: delegate.id
+    status,
+    delegatorAddress,
+    delegateAddress,
+    truncatedDelegateAddress,
+    ...formattedDates
   }
 }
 
-export const getInitialData = async function(delegatorAddress) {
+async function getInitialData(delegatorAddress) {
   let query = `{
     rounds(first: 1, orderDirection: desc, orderBy: timestamp) {
       id
     }
     delegator(id: "${delegatorAddress}") {
+      id
       delegate {
         id
       }
@@ -172,7 +216,7 @@ export const getInitialData = async function(delegatorAddress) {
     let { data } = await axios.post(
       settings.graphAPI,
       {
-        query: query
+        query
       },
       {
         headers: {
@@ -180,17 +224,18 @@ export const getInitialData = async function(delegatorAddress) {
         }
       }
     )
-    return {
-      currentRound: +data.data.rounds[0].id,
-      delegateAddress: data.data.delegator.delegate.id
-    }
+    return data
   } catch (e) {
     console.log(e)
   }
 }
 
-export const queryGraph = async function(frequency, delegatorAddress) {
-  let { currentRound, delegateAddress } = await getInitialData(delegatorAddress)
+async function getDelegatorData(frequency, delegatorAddress) {
+  let { data } = await getInitialData(delegatorAddress)
+  let delegateAddress =
+    data.delegator && data.delegator.delegate ? data.delegator.delegate.id : ''
+  let currentRound = +data.rounds[0].id
+  delegatorAddress = data.delegator ? data.delegator.id : ''
 
   // Get delegators most recent 40 shares
   let limit = 40
@@ -248,46 +293,42 @@ export const queryGraph = async function(frequency, delegatorAddress) {
         }
       }
     )
-    return formatData(frequency, data.data)
+    return formatData({ frequency, ...data.data })
   } catch (e) {
     console.log(e)
   }
 }
 
-export const sendEmail = async function({
-  frequency,
-  email,
-  delegatorAddress
-}) {
-  let data = await queryGraph(frequency, delegatorAddress)
-  let monthFrom = moment.unix(data.dateFrom).format('MMMM')
-  let monthTo = moment.unix(data.dateTo).format('MMMM')
-  let abbrMonthFrom = moment.unix(data.dateFrom).format('MMM')
-  let abbrMonthTo = moment.unix(data.dateTo).format('MMM')
-  let dateFrom = moment.unix(data.dateFrom).format('D')
-  let dateTo = moment.unix(data.dateTo).format('D')
-  let ordinalDateFrom = moment.unix(data.dateFrom).format('Do')
-  let ordinalDateTo = moment.unix(data.dateTo).format('Do')
-  let year = moment.unix(data.dateTo).format('YYYY')
+function formatDates({ dateFrom, dateTo }) {
+  let monthFrom = moment.unix(dateFrom).format('MMMM')
+  let monthTo = moment.unix(dateTo).format('MMMM')
+  let abbrMonthFrom = moment.unix(dateFrom).format('MMM')
+  let abbrMonthTo = moment.unix(dateTo).format('MMM')
+  let numberDateFrom = moment.unix(dateFrom).format('D')
+  let numberDateTo = moment.unix(dateTo).format('D')
+  let ordinalDateFrom = moment.unix(dateFrom).format('Do')
+  let ordinalDateTo = moment.unix(dateTo).format('Do')
+  let year = moment.unix(dateTo).format('YYYY')
   let todaysDate = moment().format('MMM D, YYYY')
-  let totalRounds = data.roundTo - data.roundFrom + 1
-  let averageShareRewardTokens = (
-    +data.shareRewardTokens / totalRounds
-  ).toFixed(2)
-  let averageShareFees = (+data.shareFees / totalRounds).toFixed(2)
-  let truncatedDelegateAddress = data.delegateAddress.replace(
-    data.delegateAddress.slice(5, -3),
-    '...'
-  )
+
+  return {
+    monthFrom,
+    monthTo,
+    abbrMonthFrom,
+    abbrMonthTo,
+    ordinalDateFrom,
+    ordinalDateTo,
+    year,
+    todaysDate,
+    dateFrom: numberDateFrom,
+    dateTo: numberDateTo
+  }
+}
+
+async function sendEmail({ frequency, email, delegatorAddress }) {
+  let data: any = await getDelegatorData(frequency, delegatorAddress)
   let title = `Staking Digest (${frequency.charAt(0).toUpperCase() +
     frequency.slice(1)})`
-  let rewardCallText = data.missedRewardCalls
-    ? `Transcoder ${data.delegateAddress} did not call reward during ${
-        data.missedRewardCalls
-      } of the last ${totalRounds} rounds. Head to the forum and hold it accountable!`
-    : `Transcoder ${
-        data.delegateAddress
-      } called reward during each of the last ${totalRounds} rounds, maximizing your earnings potential.`
 
   let mailData = {
     personalizations: [
@@ -307,31 +348,7 @@ export const sendEmail = async function({
           subject: `Livepeer Staking Alert for ${delegatorAddress}`,
           url: settings.url,
           frequency,
-          monthFrom,
-          monthTo,
-          abbrMonthFrom,
-          abbrMonthTo,
-          dateFrom,
-          dateTo,
-          ordinalDateFrom,
-          ordinalDateTo,
-          year,
-          todaysDate,
-          totalRounds,
-          averageShareRewardTokens,
-          averageShareFees,
-          delegatorAddress,
-          roundFrom: data.roundFrom,
-          roundTo: data.roundTo,
-          shareRewardTokens: data.shareRewardTokens,
-          shareFees: data.shareFees,
-          totalPools: data.pools.length,
-          poolRewardTokens: data.poolRewardTokens,
-          poolFees: data.poolFees,
-          missedRewardCalls: data.missedRewardCalls,
-          delegateAddress: data.delegateAddress,
-          truncatedDelegateAddress,
-          rewardCallText
+          ...data
         }
       }
     ],
@@ -343,7 +360,10 @@ export const sendEmail = async function({
       email: 'noreply@livepeer.org',
       name: 'Livepeer'
     },
-    template_id: 'd-87642cf59bb0447a860d6b7fdd79f768'
+    template_id:
+      data.status == 'Bonded'
+        ? settings.alertsTemplateID
+        : settings.unbondedTemplateID
   }
 
   try {

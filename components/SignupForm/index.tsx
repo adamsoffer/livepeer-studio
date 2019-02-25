@@ -84,6 +84,7 @@ export default () => {
   useEffect(() => {
     if (submitSucceeded) {
       setOpen(true)
+      form.reset()
     }
   }, [submitSucceeded])
 

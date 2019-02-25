@@ -55,7 +55,6 @@ export default withTheme()(({ theme, title, description, children, url }: Props)
           }
         `}
       />
-      <Header />
       {children}
     </ThemeProvider>
   )

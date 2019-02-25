@@ -1,7 +1,7 @@
 import { Root } from './styles'
 
-export default () => (
+export default ({currentRound}) => (
   <Root>
-   CURRENT ROUND: #1257
+   {`CURRENT ROUND: #${currentRound}`}
   </Root>
 )
