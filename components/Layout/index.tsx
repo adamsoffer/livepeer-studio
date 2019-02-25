@@ -1,5 +1,4 @@
 import NextSeo from 'next-seo'
-import Header from '../Header'
 import Normalize from 'react-normalize'
 import Head from 'next/head'
 import grey from '@material-ui/core/colors/grey';

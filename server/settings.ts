@@ -1,9 +1,7 @@
 let dev = process.env.NODE_ENV !== 'production'
 
 const settings = {
-  url: dev
-    ? 'https://livepeer.localtunnel.me'
-    : 'https://livepeer-staking-alerts.now.sh',
+  url: dev ? 'https://livepeer.localtunnel.me' : 'https://lptoken.app',
   graphAPI:
     'https://api.thegraph.com/subgraphs/name/adamsoffer/livepeer-canary',
   alertsTemplateID: 'd-87642cf59bb0447a860d6b7fdd79f768',
