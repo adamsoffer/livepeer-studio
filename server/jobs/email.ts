@@ -4,13 +4,14 @@ import moment from 'moment'
 import * as Utils from 'web3-utils'
 import bigInt from 'big-integer'
 import settings from '../settings'
+import Agenda from 'agenda'
 
 require('now-env')
 
 client.setApiKey(process.env.SENDGRID_API_KEY)
 client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
-function getDates(frequency) {
+function getDates(frequency: string) {
   let beginningOfMonth = moment
     .utc()
     .subtract(1, 'months')
@@ -44,7 +45,7 @@ function getDates(frequency) {
   }
 }
 
-async function formatData(data) {
+async function formatData(data: any) {
   let sharesBetweenDates = []
   let poolsBetweenDates = []
   let roundsBetweenDates = []
@@ -199,7 +200,7 @@ async function formatData(data) {
   }
 }
 
-async function getInitialData(delegatorAddress) {
+async function getInitialData(delegatorAddress: string) {
   let query = `{
     rounds(first: 1, orderDirection: desc, orderBy: timestamp) {
       id
@@ -230,7 +231,7 @@ async function getInitialData(delegatorAddress) {
   }
 }
 
-async function getDelegatorData(frequency, delegatorAddress) {
+async function getDelegatorData(frequency: string, delegatorAddress: string) {
   let { data } = await getInitialData(delegatorAddress)
   let delegateAddress =
     data.delegator && data.delegator.delegate ? data.delegator.delegate.id : ''
@@ -377,8 +378,12 @@ async function sendEmail({ frequency, email, delegatorAddress }) {
   }
 }
 
-module.exports = async function(agenda) {
+module.exports = async function(agenda: Agenda) {
   agenda.define('email', async (job, done) => {
+    if (settings.paused) {
+      done()
+      return false
+    }
     let { frequency, email, delegatorAddress } = job.attrs.data
     await sendEmail({ frequency, email, delegatorAddress })
     done()

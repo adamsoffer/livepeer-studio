@@ -1,3 +1,3 @@
-# Livepeer Token Alert
+# ✧･ﾟ Livepeer Studio ･ﾟ✧
 
-Under construction
+##  Products & tools for the Livepeer ecosystem.

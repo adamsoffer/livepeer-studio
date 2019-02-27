@@ -1,4 +1,3 @@
-import NextSeo from 'next-seo'
 import Normalize from 'react-normalize'
 import Head from 'next/head'
 import grey from '@material-ui/core/colors/grey';
@@ -15,16 +14,7 @@ type Props = {
   url?: string
 }
 
-export default withTheme()(({ theme, title, description, children, url }: Props) => {
-  const config = {
-    title: title,
-    description: description,
-    openGraph: {
-      title: title,
-      description: description,
-      url: url ? url : 'https://thinkfwd.co'
-    }
-  }
+export default withTheme()(({ theme, children }: Props) => {
   return (
     <ThemeProvider theme={theme}>
       <Head>
@@ -33,7 +23,6 @@ export default withTheme()(({ theme, title, description, children, url }: Props)
           rel="stylesheet"
         />
       </Head>
-      <NextSeo config={config} />
       <Normalize />
       <Global
         styles={css`
@@ -43,6 +32,10 @@ export default withTheme()(({ theme, title, description, children, url }: Props)
           body {
             background-color: ${grey[900]};
             color: ${theme.palette.common.white}
+          }
+          a {
+            text-decoration: none;
+            color: inherit;
           }
           h1,
           h2,

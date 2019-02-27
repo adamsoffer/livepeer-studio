@@ -1,51 +1,41 @@
 import styled from '@emotion/styled'
 import { mq } from '../../lib/helpers'
 
-export const Background = styled.div({
-  backgroundColor: 'rgba(34, 34, 34, .95)',
+export const Root = styled.div({
   position: 'relative',
-  height: '100vh'
+  height: 'calc(100vh)',
+  display: 'flex',
+  alignItems: 'center',
+  backgroundImage: 'url(/static/img/livepeer-squares.svg)',
+  backgroundPosition: 'center right',
+  backgroundSize: 'contain',
+  backgroundRepeat: 'no-repeat',
+  marginBottom: 200
 })
 
 export const Wrapper = styled.div({
   display: 'flex',
-  justifyContent: 'space-between',
   flexDirection: 'column',
-  paddingBottom: 40,
-  paddingTop: 40,
-  width: '100%',
-  textAlign: 'center',
-  [mq[2]]: {
-    paddingBottom: 0,
-    paddingTop: 80,
-    flexDirection: 'row'
-  }
-})
-
-export const Column = styled.div({
-  display: 'flex',
-  flexDirection: 'column',
-  width: '100%',
-  [mq[2]]: {
-    width: '50%',
-    maxWidth: 450
-  }
+  width: '100%'
 })
 
 export const Heading = styled.h1({
-  fontSize: 16,
+  fontSize: 18,
   fontWeight: 600,
-  marginBottom: 16,
+  marginBottom: 24,
   [mq[2]]: {
-    fontSize: 18
+    fontSize: 24,
   }
 })
 
 export const Subheading = styled.h2({
-  fontSize: 40,
+  fontSize: 32,
+  marginBottom: 32,
+  lineHeight: '40px',
   [mq[2]]: {
     fontSize: 56,
-    marginBottom: 16
+    lineHeight: '72px',
+    maxWidth: 800
   }
 })
 
@@ -56,8 +46,7 @@ export const Body = styled.p({
   lineHeight: '30px',
   marginBottom: 40,
   [mq[2]]: {
-    marginBottom: 0,
-    maxWidth: 448
+    marginBottom: 0
   }
 })
 

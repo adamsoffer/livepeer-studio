@@ -7,13 +7,16 @@ const theme = {
       paper: grey[900],
       default: grey[900]
     },
-    primary: { dark: '#50E98D', main: '#50E98D' },
-    secondary: { dark: '#50E98D', main: '#50E98D' },
+    primary: { dark: '#00eb88', main: '#00eb88' },
+    secondary: { dark: '#00eb88', main: '#00eb88' },
     text: {
       primary: '#ffffff',
       secondary: '#ffffff',
       disabled: '#ffffff',
       hint: '#ffffff'
+    },
+    action: {
+      hoverOpacity: 0.0
     }
   },
   typography: {
@@ -27,10 +30,26 @@ const theme = {
       fontFamily: 'Poppins'
     },
     h2: {
-      fontFamily: 'Poppins'
+      fontFamily: 'Poppins',
+      fontWeight: 600,
+    },
+    h3: {
+      fontFamily: 'Poppins',
+      fontWeight: 600,
+    },
+    h4: {
+      fontFamily: 'Poppins',
+      fontWeight: 600,
+    },
+    h5: {
+      fontFamily: 'Poppins',
+      fontWeight: 600,
+    },
+    h6: {
+      fontFamily: 'Poppins',
+      fontWeight: 600,
     }
   },
-  breakpoints: [576, 768, 992, 1200, 1540],
   gutter: 20,
   overrides: {
     MuiFormControl: {

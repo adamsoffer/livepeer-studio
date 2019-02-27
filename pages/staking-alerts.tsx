@@ -7,7 +7,6 @@ import { useState } from 'react'
 import Layout from '../components/Layout'
 import SignupForm from '../components/SignupForm'
 import Header from '../components/Header'
-import LivepeerSDK from '@livepeer/sdk'
 
 const Page: any = ({ currentRound, router: { query } }) => {
   let [open, setOpen] = useState(false)
@@ -15,7 +14,7 @@ const Page: any = ({ currentRound, router: { query } }) => {
 
   return (
     <Layout>
-      <Header currentRound={currentRound} />
+      <Header />
       <SignupForm />
       <Modal
         aria-labelledby="modal-title"
@@ -59,12 +58,6 @@ const Page: any = ({ currentRound, router: { query } }) => {
       </Modal>
     </Layout>
   )
-}
-
-Page.getInitialProps = async () => {
-  let { rpc } = await LivepeerSDK()
-  let currentRound = await rpc.getCurrentRound()
-  return { currentRound }
 }
 
 export default withRouter(Page)

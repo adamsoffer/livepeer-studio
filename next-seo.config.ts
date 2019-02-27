@@ -1,12 +1,12 @@
 export default {
-  title: 'LPT Tools',
+  title: 'Livepeer Studio',
   description:
     'Sign up to receive email alerts with your earnings and keep tabs on how your transcoder is performing.',
   openGraph: {
     type: 'website',
     locale: 'en_IE',
-    url: 'https://lp.tools/',
-    title: 'LPT Tools',
+    url: 'https://livepeer.studio/',
+    title: 'Livepeer Studio',
     description:
       'Sign up to receive email alerts with your earnings and keep tabs on how your transcoder is performing.',
     defaultImageWidth: 1200,
@@ -14,12 +14,12 @@ export default {
     // Multiple Open Graph images is only available in version `7.0.0-canary.0`+ of next (see note top of README.md)
     images: [
       {
-        url: 'https://lp.tools/static/logo/livepeer-card.png',
+        url: 'https://livepeer.studio/static/logo/livepeer-card.png',
         width: 800,
         height: 600,
         alt: 'Livepeer'
       }
     ],
-    site_name: 'LPT Tools'
+    site_name: 'Livepeer Studio'
   }
 }

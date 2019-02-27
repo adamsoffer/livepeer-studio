@@ -2,9 +2,10 @@ import styled from '@emotion/styled'
 import { mq } from '../../lib/helpers'
 
 export const Background = styled.div({
-  backgroundColor: 'rgba(34, 34, 34, .95)',
   position: 'relative',
-  height: '100vh'
+  height: '100vh',
+  display: 'flex',
+  paddingTop: 120
 })
 
 export const Wrapper = styled.div({

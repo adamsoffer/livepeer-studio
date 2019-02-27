@@ -1,28 +1,22 @@
+import {Button} from '@material-ui/core'
 import { Container } from '../../lib/helpers'
 import {
-  Background,
-  Wrapper,
-  Column,
-  Heading,
+  Root,
   Subheading,
-  Body,
+  Heading
 } from './styles'
+import * as Scroll from 'react-scroll';
+
+let ScrollLink = Scroll.Link;
 
 export default () => {
   return (
-    <Background>
+    <Root>
       <Container>
-        <Wrapper>
-          <Column>
-            <Heading>✧･ﾟ Livepeer Staking Alerts ･ﾟ✧</Heading>
-            <Subheading>Get Notified</Subheading>
-            <Body>
-              Sign up to receive email alerts with your earnings and keep tabs
-              on how your transcoder is performing.
-            </Body>
-          </Column>
-        </Wrapper>
+        <Heading>✧･ﾟ Livepeer Studio ･ﾟ✧</Heading>
+        <Subheading>Building products & tools for the Livepeer ecosystem.</Subheading>
+        <Button variant="contained" color="primary"><ScrollLink to="products" smooth={true}>View Products & Tools</ScrollLink></Button>
       </Container>
-    </Background>
+    </Root>
   )
 }

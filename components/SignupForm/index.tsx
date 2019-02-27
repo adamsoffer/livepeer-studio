@@ -38,7 +38,7 @@ export const StyledRadioGroup: any = styled(RadioGroup)({
 
 const recaptchaRef: any = React.createRef();
 
-const onSubmit = async values => {
+const onSubmit = async (values: any) => {
   try {
     recaptchaRef.current.execute();
     const response = await axios.post('/confirmEmail', {
@@ -52,7 +52,7 @@ const onSubmit = async values => {
   }
 }
 
-const validate = values => {
+const validate = (values: any) => {
   const errors: any = {}
   if (!values.email) {
     errors.email = 'Required'
@@ -129,7 +129,7 @@ export default () => {
       <Container>
         <Wrapper>
           <Column>
-            <Heading>✧･ﾟ Livepeer Staking Alerts ･ﾟ✧</Heading>
+            <Heading>✧･ﾟ Staking Alerts ･ﾟ✧</Heading>
             <Subheading>Get Notified</Subheading>
             <Body>
               Sign up to receive email alerts with your earnings and keep tabs
@@ -166,7 +166,7 @@ export default () => {
                     delegatorAddress.meta.touched && delegatorAddress.meta.error
                   )
                 }
-                label="My bonded Ethereum address is"
+                label="My Ethereum address is"
                 name="delegatorAddress"
                 placeholder="e.g. 0x4bbeEB066eD09..."
                 fullWidth

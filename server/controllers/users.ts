@@ -3,6 +3,7 @@ import url from 'url'
 import moment from 'moment'
 import agenda from '../agenda'
 import settings from '../settings'
+import { Response, Request } from 'express'
 
 require('now-env')
 
@@ -12,7 +13,7 @@ client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 const optIn = 'opt-in'
 
 // Send confirmation email to contact with link to confirm email
-export const sendConfirmation = async (req, res) => {
+export const sendConfirmation = async (req: Request, res: Response) => {
   let emailBody = req.body
   try {
     let [response] = await client.request({
@@ -26,7 +27,7 @@ export const sendConfirmation = async (req, res) => {
   }
 }
 
-export const dispatch = async function(req: any, res: any) {
+export const dispatch = async function(req: Request, res: Response) {
   if (req.query.accessToken !== process.env.SENDGRID_API_KEY) {
     return res.sendStatus(401)
   }
@@ -101,7 +102,8 @@ async function createEmailJob({ frequency, email, delegatorAddress }) {
   })
   job.unique({ frequency, email, delegatorAddress })
   job.repeatEvery(
-    `${frequency == 'weekly' ? everyFridayAt7am : firstOfEveryMonthAt7am}`
+    `${frequency == 'weekly' ? everyFridayAt7am : firstOfEveryMonthAt7am}`,
+    { skipImmediate: true }
   )
   job.save()
 }
@@ -151,9 +153,9 @@ async function deleteRecipientFromList({ list_id, recipient_id }) {
 
 function prepareConfirmationEmail(reqBody) {
   let subject = 'Please Confirm Your Email Address'
-  let confirmationLink = `${settings.url}/?verify=true&frequency=${
-    reqBody.frequency
-  }`
+  let confirmationLink = `${
+    settings.url
+  }/staking-alerts?verify=true&frequency=${reqBody.frequency}`
   let todaysDate = moment().format('MMM D, YYYY')
 
   let emailBody = {

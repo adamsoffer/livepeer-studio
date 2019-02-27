@@ -1,6 +1,6 @@
 import Agendash from 'agendash'
 import bodyParser from 'body-parser'
-import express from 'express'
+import express, { Request, Response } from 'express'
 import next from 'next'
 import shell from 'shelljs'
 import { dispatch, sendConfirmation } from './controllers/users'
@@ -24,10 +24,10 @@ app.prepare().then(async () => {
   )
   server.post('/confirmEmail', sendConfirmation)
   server.post('/dispatch', dispatch)
-  server.get('*', (req, res) => {
+  server.get('*', (req: Request, res: Response) => {
     return handle(req, res)
   })
-  server.listen(port, err => {
+  server.listen(port, (err: Error) => {
     if (err) throw err
     console.log(`> Ready on http://localhost:${port}`)
   })
@@ -36,8 +36,8 @@ app.prepare().then(async () => {
   if (dev) {
     let localtunnel = require('localtunnel')
     let tunnel = localtunnel(port, { subdomain: 'livepeer' }, function(
-      err,
-      tunnel
+      err: Error,
+      tunnel: any
     ) {
       if (err) {
         // retry if error
@@ -48,7 +48,7 @@ app.prepare().then(async () => {
       }
     })
 
-    tunnel.on('close', function() {
+    tunnel.on('close', () => {
       shell.exec('./localtunnel.sh')
       console.log('tunnel closed')
     })
