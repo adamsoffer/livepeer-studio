@@ -1,18 +1,19 @@
-import Normalize from 'react-normalize'
-import Head from 'next/head'
-import grey from '@material-ui/core/colors/grey';
-import { Global, css } from '@emotion/core'
-import { withTheme } from '@material-ui/core/styles';
-import { ThemeProvider } from 'emotion-theming'
+import Normalize from "react-normalize";
+import Head from "next/head";
+import grey from "@material-ui/core/colors/grey";
+import { Global, css } from "@emotion/core";
+import { withTheme } from "@material-ui/core/styles";
+import { ThemeProvider } from "emotion-theming";
+import Footer from "../Footer";
 
 type Props = {
-  theme?: any
-  title?: string
-  description?: string
-  children: object
-  image?: string
-  url?: string
-}
+  theme?: any;
+  title?: string;
+  description?: string;
+  children: object;
+  image?: string;
+  url?: string;
+};
 
 export default withTheme()(({ theme, children }: Props) => {
   return (
@@ -27,11 +28,11 @@ export default withTheme()(({ theme, children }: Props) => {
       <Global
         styles={css`
           * {
-            font-family: 'Poppins', sans-serif;
+            font-family: "Poppins", sans-serif;
           }
           body {
             background-color: ${grey[900]};
-            color: ${theme.palette.common.white}
+            color: ${theme.palette.common.white};
           }
           a {
             text-decoration: none;
@@ -48,6 +49,7 @@ export default withTheme()(({ theme, children }: Props) => {
         `}
       />
       {children}
+      <Footer />
     </ThemeProvider>
-  )
-})
+  );
+});

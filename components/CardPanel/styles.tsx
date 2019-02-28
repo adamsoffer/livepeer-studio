@@ -1,15 +1,13 @@
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 export const Root = styled.div({
-  backgroundImage: 'url(/static/img/livepeer-squares.svg)',
-  backgroundPosition: 'center left',
-  backgroundSize: 'contain',
-  backgroundRepeat: 'no-repeat'
-})
+  backgroundImage: "url(/static/img/livepeer-squares.svg)",
+  backgroundPosition: "center left",
+  backgroundRepeat: "no-repeat",
+  paddingBottom: 120
+});
 
 export const Wrapper = styled.div({
-  height: '100vh',
-  display: 'flex',
-  justifyContent: 'center',
-  flexDirection: 'column'
-})
+  paddingTop: 40,
+  paddingBottom: 40
+});

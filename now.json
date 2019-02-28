@@ -4,6 +4,8 @@
     "SENDGRID_API_KEY": "@token-alerts-sendgrid-api-key",
     "MONGO_DB": "@token-alerts-mongo-db",
     "MONGO_USERNAME": "@token-alerts-mongo-username",
-    "MONGO_PASSWORD": "@token-alerts-mongo-password"
+    "MONGO_PASSWORD": "@token-alerts-mongo-password",
+    "DASH_USERNAME": "@token-alerts-dash-username",
+    "DASH_PASSWORD": "@token-alerts-dash-password"
   }
 }
