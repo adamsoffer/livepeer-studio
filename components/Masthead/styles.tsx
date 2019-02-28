@@ -3,7 +3,7 @@ import { mq } from "../../lib/helpers";
 
 export const Root = styled.div({
   position: "relative",
-  height: "calc(100vh)",
+  height: "100vh",
   display: "flex",
   alignItems: "center",
   backgroundImage: "url(/static/img/livepeer-squares.svg)",

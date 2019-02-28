@@ -3,9 +3,10 @@ import { mq } from "../../lib/helpers";
 
 export const Background = styled.div({
   position: "relative",
-  height: "calc(100vh - 82px)",
-  display: "flex",
-  paddingTop: 120
+  paddingTop: 120,
+  [mq[2]]: {
+    height: "calc(100vh - 92px)"
+  }
 });
 
 export const Wrapper = styled.div({
