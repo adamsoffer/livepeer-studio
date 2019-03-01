@@ -13,11 +13,11 @@ export default () => {
         <Subheading>
           Building products & tools for the Livepeer ecosystem.
         </Subheading>
-        <Button variant="contained" color="primary">
-          <ScrollLink to="products" smooth={true}>
+        <ScrollLink to="products" smooth={true}>
+          <Button variant="contained" color="primary">
             View Products & Tools
-          </ScrollLink>
-        </Button>
+          </Button>
+        </ScrollLink>
       </Container>
     </Root>
   );
