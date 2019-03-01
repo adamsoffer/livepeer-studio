@@ -158,7 +158,9 @@ function prepareConfirmationEmail(reqBody) {
   let confirmationLink = `${
     settings.url
   }/staking-alerts?action=confirm&frequency=${reqBody.frequency}`;
-  let todaysDate = moment().format("MMM D, YYYY");
+  let todaysDate = moment()
+    .tz("America/New_York")
+    .format("MMM D, YYYY");
 
   let emailBody = {
     personalizations: [

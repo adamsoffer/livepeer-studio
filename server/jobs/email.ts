@@ -307,7 +307,9 @@ function formatDates({ dateFrom, dateTo }) {
   let ordinalDateFrom = moment.unix(dateFrom).format("Do");
   let ordinalDateTo = moment.unix(dateTo).format("Do");
   let year = moment.unix(dateTo).format("YYYY");
-  let todaysDate = moment().format("MMM D, YYYY");
+  let todaysDate = moment()
+    .tz("America/New_York")
+    .format("MMM D, YYYY");
 
   return {
     monthFrom,

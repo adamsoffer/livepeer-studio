@@ -7,6 +7,22 @@ import { useState } from "react";
 import Layout from "../components/Layout";
 import SignupForm from "../components/SignupForm";
 import Header from "../components/Header";
+import styled from "@emotion/styled";
+import { mq } from "../lib/helpers";
+
+export const StyledPaper: any = styled(Paper)({
+  width: "calc(100% - 40px)",
+  outline: "none",
+  padding: "32px 24px",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  [mq[2]]: {
+    width: "inherit",
+    maxWidth: 600
+  }
+});
 
 const Page: any = ({ router: { query } }) => {
   let [open, setOpen] = useState(false);
@@ -41,20 +57,9 @@ const Page: any = ({ router: { query } }) => {
         }
         onClose={() => setOpen(false)}
       >
-        <Paper
-          elevation={5}
-          style={{
-            maxWidth: 600,
-            outline: "none",
-            padding: "32px 24px",
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)"
-          }}
-        >
+        <StyledPaper elevation={5}>
           <CloseIcon
-            onClick={() => Router.push("/")}
+            onClick={() => Router.push("/staking-alerts")}
             style={{
               cursor: "pointer",
               position: "absolute",
@@ -72,7 +77,7 @@ const Page: any = ({ router: { query } }) => {
           <Typography variant="subtitle1" id="modal-description">
             {modalDescription}
           </Typography>
-        </Paper>
+        </StyledPaper>
       </Modal>
     </Layout>
   );
