@@ -8,7 +8,10 @@ import Layout from "../components/Layout";
 import SignupForm from "../components/SignupForm";
 import Header from "../components/Header";
 import styled from "@emotion/styled";
+import NextSeo from "next-seo";
+import seoDefaultConfig from "../next-seo.config";
 import { mq } from "../lib/helpers";
+import settings from "../server/settings";
 
 export const StyledPaper: any = styled(Paper)({
   width: "calc(100% - 40px)",
@@ -23,6 +26,31 @@ export const StyledPaper: any = styled(Paper)({
     maxWidth: 600
   }
 });
+
+let seo = {
+  title: "Livepeer Studio - Staking Alerts",
+  description:
+    "Sign up to receive email alerts with your earnings and keep tabs on how your transcoder is performing.",
+  openGraph: {
+    type: "website",
+    locale: "en_IE",
+    url: `${settings.url}/staking-alerts`,
+    title: "Livepeer Studio - Staking Alerts",
+    description:
+      "Sign up to receive email alerts with your earnings and keep tabs on how your transcoder is performing.",
+    defaultImageWidth: 1200,
+    defaultImageHeight: 1200,
+    images: [
+      {
+        url: `${settings.url}/static/img/livepeer-card.png`,
+        width: 800,
+        height: 600,
+        alt: "Livepeer"
+      }
+    ],
+    site_name: "Livepeer Studio"
+  }
+};
 
 const Page: any = ({ router: { query } }) => {
   let [open, setOpen] = useState(false);
@@ -47,6 +75,7 @@ const Page: any = ({ router: { query } }) => {
 
   return (
     <Layout>
+      <NextSeo config={{ ...seoDefaultConfig, ...seo }} />
       <Header />
       <SignupForm />
       <Modal
