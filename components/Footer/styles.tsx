@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import theme from "../../lib/theme";
 
 export const Wrapper = styled.div({
   paddingTop: 32,
