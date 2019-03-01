@@ -20,7 +20,11 @@ export default () => {
               />
             </svg>
           </a>
-          <a href="" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://github.com/adamsoffer/livepeer-studio"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <svg style={{ width: 24, height: 24 }} viewBox="0 0 24 24">
               <path
                 fill="#ffffff"
