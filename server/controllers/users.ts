@@ -31,7 +31,7 @@ export const dispatch = async function(req: Request, res: Response) {
   if (req.query.accessToken !== process.env.SENDGRID_API_KEY) {
     return res.sendStatus(401);
   }
-
+  console.log("cool", req.body[0]["url"]);
   let { action } = url.parse(req.body[0]["url"], true).query;
 
   switch (action) {
@@ -184,12 +184,12 @@ function prepareConfirmationEmail(reqBody) {
       }
     ],
     from: {
-      email: "noreply@livepeer.org",
-      name: "Livepeer"
+      email: "no-reply@livepeer.studio",
+      name: "Livepeer Studio"
     },
     reply_to: {
-      email: "noreply@livepeer.org",
-      name: "Livepeer"
+      email: "no-reply@livepeer.studio",
+      name: "Livepeer Studio"
     },
     template_id: settings.confirmationTemplateID
   };

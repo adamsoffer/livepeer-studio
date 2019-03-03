@@ -353,12 +353,12 @@ async function sendEmail({ frequency, email, delegatorAddress }) {
       }
     ],
     from: {
-      email: "noreply@livepeer.org",
-      name: "Livepeer"
+      email: "no-reply@livepeer.studio",
+      name: "Livepeer Studio"
     },
     reply_to: {
-      email: "noreply@livepeer.org",
-      name: "Livepeer"
+      email: "no-reply@livepeer.studio",
+      name: "Livepeer Studio"
     },
     template_id:
       data.status == "Bonded"
