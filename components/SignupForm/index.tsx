@@ -59,7 +59,9 @@ const onSubmit = async (values: any) => {
     await axios.post("/confirmEmail", {
       email: values.email,
       delegatorAddress: values.delegatorAddress.toLowerCase(),
-      frequency: values.frequency
+      frequency: values.frequency,
+      senderEmail: values.senderEmail,
+      senderName: values.senderName
     });
   } catch (e) {
     console.log(e);
@@ -87,13 +89,17 @@ export default () => {
     onSubmit,
     validate,
     initialValues: {
-      frequency: "weekly"
+      frequency: "weekly",
+      senderEmail: "no-reply@livepeer.studio",
+      senderName: "Livepeer Studio"
     }
   });
 
   let email = useField("email", form);
   let delegatorAddress = useField("delegatorAddress", form);
   let frequency = useField("frequency", form);
+  let senderEmail = useField("senderEmail", form);
+  let senderName = useField("senderName", form);
 
   useEffect(() => {
     if (submitSucceeded) {
@@ -145,6 +151,8 @@ export default () => {
           </Column>
           <Column>
             <Form noValidate onSubmit={handleSubmit}>
+              <input type="hidden" {...senderEmail.input} />
+              <input type="hidden" {...senderName.input} />
               <TextField
                 {...email.input}
                 id="email"

@@ -2,7 +2,7 @@ import Agendash from "agendash";
 import bodyParser from "body-parser";
 import express, { Request, Response } from "express";
 import next from "next";
-import shell from "shelljs";
+import url from "url";
 import { dispatch, sendConfirmation } from "./controllers/users";
 import agenda from "./agenda";
 import basicAuth from "express-basic-auth";
@@ -29,6 +29,17 @@ app.prepare().then(async () => {
       title: "Staking Alerts"
     })
   );
+
+  // Redirect to destination if redirect url contained in query
+  server.get("/staking-alerts", (req, res) => {
+    let currentUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
+    let { redirect }: any = url.parse(currentUrl, true).query;
+    if (redirect) {
+      res.redirect(redirect);
+    }
+    return app.render(req, res, "/staking-alerts", req.query);
+  });
+
   server.post("/confirmEmail", sendConfirmation);
   server.post("/dispatch", dispatch);
   server.get("*", (req: Request, res: Response) => {
@@ -38,26 +49,4 @@ app.prepare().then(async () => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${port}`);
   });
-
-  // Set up localtunnel for testing sendgrid webhooks locally
-  if (dev) {
-    let localtunnel = require("localtunnel");
-    let tunnel = localtunnel(port, { subdomain: "livepeer-studio" }, function(
-      err: Error,
-      tunnel: any
-    ) {
-      if (err) {
-        // retry if error
-        shell.exec("./localtunnel.sh");
-        console.log(err);
-      } else {
-        console.log(tunnel.url);
-      }
-    });
-
-    tunnel.on("close", () => {
-      shell.exec("./localtunnel.sh");
-      console.log("tunnel closed");
-    });
-  }
 });

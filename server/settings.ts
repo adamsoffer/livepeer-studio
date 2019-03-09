@@ -1,9 +1,7 @@
 let dev = process.env.NODE_ENV !== "production";
 
 const settings = {
-  url: dev
-    ? "https://livepeer-studio.localtunnel.me"
-    : "https://livepeer.studio",
+  url: dev ? "https://livepeer-studio.serveo.net" : "https://livepeer.studio",
   graphAPI:
     "https://api.thegraph.com/subgraphs/name/adamsoffer/livepeer-canary",
   alertsTemplateID: dev

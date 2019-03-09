@@ -325,10 +325,22 @@ function formatDates({ dateFrom, dateTo }) {
   };
 }
 
-async function sendEmail({ frequency, email, delegatorAddress }) {
+async function sendEmail({
+  frequency,
+  email,
+  delegatorAddress,
+  senderEmail,
+  senderName,
+  unsubscribeRedirect
+}: any) {
   let data: any = await getDelegatorData(frequency, delegatorAddress);
   let title = `Staking Digest (${frequency.charAt(0).toUpperCase() +
     frequency.slice(1)})`;
+  let unsubscribeLink = `${
+    settings.url
+  }/staking-alerts?action=unsubscribe&frequency=${frequency}${
+    unsubscribeRedirect ? `&redirect=${unsubscribeRedirect}` : ""
+  }`;
 
   let mailData = {
     personalizations: [
@@ -346,19 +358,19 @@ async function sendEmail({ frequency, email, delegatorAddress }) {
         dynamic_template_data: {
           title,
           subject: `Livepeer Staking Alert for ${delegatorAddress}`,
-          url: settings.url,
           frequency,
+          unsubscribeLink,
           ...data
         }
       }
     ],
     from: {
-      email: "no-reply@livepeer.studio",
-      name: "Livepeer Studio"
+      email: senderEmail ? senderEmail : "no-reply@livepeer.studio",
+      name: senderName ? senderName : "Livepeer Studio"
     },
     reply_to: {
-      email: "no-reply@livepeer.studio",
-      name: "Livepeer Studio"
+      email: senderEmail ? senderEmail : "no-reply@livepeer.studio",
+      name: senderName ? senderName : "Livepeer Studio"
     },
     template_id:
       data.status == "Bonded"
@@ -381,10 +393,9 @@ module.exports = async function(agenda: Agenda) {
   agenda.define("email", async (job, done) => {
     if (settings.paused) {
       done();
-      return false;
+    } else {
+      await sendEmail({ ...job.attrs.data });
+      done();
     }
-    let { frequency, email, delegatorAddress } = job.attrs.data;
-    await sendEmail({ frequency, email, delegatorAddress });
-    done();
   });
 };

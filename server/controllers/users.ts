@@ -31,7 +31,7 @@ export const dispatch = async function(req: Request, res: Response) {
   if (req.query.accessToken !== process.env.SENDGRID_API_KEY) {
     return res.sendStatus(401);
   }
-  console.log("cool", req.body[0]["url"]);
+
   let { action } = url.parse(req.body[0]["url"], true).query;
 
   switch (action) {
@@ -78,7 +78,16 @@ async function unsubscribe({ frequency, email, delegatorAddress }) {
 }
 
 // Create new contact and add contact to given list
-async function addUser({ frequency, email, delegatorAddress, type, timeSent }) {
+async function addUser({
+  frequency,
+  email,
+  delegatorAddress,
+  senderEmail,
+  senderName,
+  unsubscribeRedirect,
+  type,
+  timeSent
+}) {
   try {
     let contactID = await createRecipient({
       type,
@@ -87,27 +96,48 @@ async function addUser({ frequency, email, delegatorAddress, type, timeSent }) {
     });
     if (contactID) {
       await addRecipientToList({ contactID, delegatorAddress, frequency });
-      await createEmailJob({ frequency, email, delegatorAddress });
+      await createEmailJob({
+        frequency,
+        email,
+        delegatorAddress,
+        senderEmail,
+        senderName,
+        unsubscribeRedirect
+      });
     }
   } catch (e) {
     console.log(e);
   }
 }
 
-async function createEmailJob({ frequency, email, delegatorAddress }) {
-  let everyFridayAt7am = "0 7 * * 5";
-  let firstOfEveryMonthAt7am = "0 7 1 * *";
-  let job = await agenda.create("email", {
-    frequency,
-    email,
-    delegatorAddress
-  });
-  job.unique({ frequency, email, delegatorAddress });
-  job.repeatEvery(
-    `${frequency == "weekly" ? everyFridayAt7am : firstOfEveryMonthAt7am}`,
-    { skipImmediate: true, timezone: "America/New_York" }
-  );
-  job.save();
+async function createEmailJob({
+  frequency,
+  email,
+  delegatorAddress,
+  senderEmail,
+  senderName,
+  unsubscribeRedirect
+}) {
+  try {
+    let everyFridayAt7am = "0 7 * * 5";
+    let firstOfEveryMonthAt7am = "0 7 1 * *";
+    let job = await agenda.create("email", {
+      frequency,
+      email,
+      delegatorAddress,
+      senderEmail,
+      senderName,
+      unsubscribeRedirect
+    });
+    job.unique({ frequency, email, delegatorAddress });
+    job.repeatEvery(
+      `${frequency == "weekly" ? everyFridayAt7am : firstOfEveryMonthAt7am}`,
+      { skipImmediate: true, timezone: "America/New_York" }
+    );
+    job.save();
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 async function getRecipientId(email) {
@@ -157,7 +187,9 @@ function prepareConfirmationEmail(reqBody) {
   let subject = "Please Confirm Your Email Address";
   let confirmationLink = `${
     settings.url
-  }/staking-alerts?action=confirm&frequency=${reqBody.frequency}`;
+  }/staking-alerts?action=confirm&frequency=${reqBody.frequency}${
+    reqBody.optInRedirect ? `&redirect=${reqBody.optInRedirect}` : ""
+  }`;
   let todaysDate = moment()
     .tz("America/New_York")
     .format("MMM D, YYYY");
@@ -184,12 +216,16 @@ function prepareConfirmationEmail(reqBody) {
       }
     ],
     from: {
-      email: "no-reply@livepeer.studio",
-      name: "Livepeer Studio"
+      email: reqBody.senderEmail
+        ? reqBody.senderEmail
+        : "no-reply@livepeer.studio",
+      name: reqBody.senderName ? reqBody.senderName : "Livepeer Studio"
     },
     reply_to: {
-      email: "no-reply@livepeer.studio",
-      name: "Livepeer Studio"
+      email: reqBody.senderEmail
+        ? reqBody.senderEmail
+        : "no-reply@livepeer.studio",
+      name: reqBody.senderName ? reqBody.senderName : "Livepeer Studio"
     },
     template_id: settings.confirmationTemplateID
   };
