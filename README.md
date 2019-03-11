@@ -21,7 +21,7 @@ If you'd like to offer Livepeer staking alerts inside your application simply po
 | Field               | Description                                |
 | ------------------- | ------------------------------------------ |
 | senderEmail         | Defaults to no-reply@livepeer.studio       |
-| senderName          | Defaults to livepeer.studio                |
+| senderName          | Defaults to Livepeer Studio                |
 | optInRedirect       | Defaults to livepeer.studio/staking-alerts |
 | unsubscribeRedirect | Defaults to livepeer.studio/staking-alerts |
 
