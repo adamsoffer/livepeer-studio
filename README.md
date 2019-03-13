@@ -16,7 +16,7 @@ If you'd like to offer Livepeer staking alerts inside your application simply po
 | delegatorAddress\* | A valid ethereum address                                                                                                                                         |
 | frequency\*        | Value should be either 'weekly' or 'monthly'. The weekly option gets sent every Friday at 7am ET and monthly option get sent on the 1st of every month at 7am ET |
 
-### Optional form fields (should be hidden):
+### Optional form fields:
 
 | Field               | Description                                |
 | ------------------- | ------------------------------------------ |
