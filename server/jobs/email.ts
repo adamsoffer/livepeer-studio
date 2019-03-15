@@ -1,68 +1,67 @@
-import client from "@sendgrid/client";
-import axios from "axios";
-import moment from "moment";
-import * as Utils from "web3-utils";
-import bigInt from "big-integer";
-import settings from "../settings";
-import Agenda from "agenda";
+import client from '@sendgrid/client'
+import axios from 'axios'
+import moment from 'moment'
+import * as Utils from 'web3-utils'
+import bigInt from 'big-integer'
+import settings from '../settings'
+import Agenda from 'agenda'
 
-require("now-env");
+require('now-env')
 
-client.setApiKey(process.env.SENDGRID_API_KEY);
-client.setDefaultHeader("User-Agent", "token-alert/1.0.0");
+client.setApiKey(process.env.SENDGRID_API_KEY)
+client.setDefaultHeader('User-Agent', 'token-alert/1.0.0')
 
 function getDates(frequency: string) {
   let beginningOfMonth = moment()
-    .subtract(1, "months")
-    .startOf("month")
-    .unix();
+    .subtract(1, 'months')
+    .startOf('month')
+    .unix()
 
   let endOfMonth = moment()
-    .subtract(1, "months")
-    .endOf("month")
-    .unix();
+    .subtract(1, 'months')
+    .endOf('month')
+    .unix()
 
   let beginningOfWeek = moment()
-    .endOf("day")
-    .subtract(7, "d")
-    .unix();
+    .endOf('day')
+    .subtract(7, 'd')
+    .unix()
 
   let endOfWeek = moment()
-    .endOf("day")
-    .subtract(0, "d")
-    .unix();
+    .endOf('day')
+    .subtract(0, 'd')
+    .unix()
 
-  let dateFrom = frequency == "weekly" ? beginningOfWeek : beginningOfMonth;
-  let dateTo = frequency == "weekly" ? endOfWeek : endOfMonth;
+  let dateFrom = frequency == 'weekly' ? beginningOfWeek : beginningOfMonth
+  let dateTo = frequency == 'weekly' ? endOfWeek : endOfMonth
 
   return {
     dateFrom,
-    dateTo
-  };
+    dateTo,
+  }
 }
 
 async function formatData(data: any) {
-  let sharesBetweenDates = [];
-  let poolsBetweenDates = [];
-  let roundsBetweenDates = [];
-  let missedRewardCalls: number;
-  let roundFrom: number;
-  let roundTo: number;
-  let totalRounds: number;
-  let shareRewardTokens: string;
-  let shareFees: string;
-  let averageShareRewardTokens: string;
-  let averageShareFees: string;
-  let poolRewardTokens: string;
-  let poolFees: string;
-  let delegatorAddress: string;
-  let delegateAddress: string;
-  let truncatedDelegateAddress: string;
-  let currentRound = +data.rounds[0].id;
-  let status =
-    data.delegator && data.delegator.delegate ? "Bonded" : "Unbonded";
-  let { dateFrom, dateTo } = getDates(data.frequency);
-  let formattedDates = formatDates({ dateFrom, dateTo });
+  let sharesBetweenDates = []
+  let poolsBetweenDates = []
+  let roundsBetweenDates = []
+  let missedRewardCalls: number
+  let roundFrom: number
+  let roundTo: number
+  let totalRounds: number
+  let shareRewardTokens: string
+  let shareFees: string
+  let averageShareRewardTokens: string
+  let averageShareFees: string
+  let poolRewardTokens: string
+  let poolFees: string
+  let delegatorAddress: string
+  let delegateAddress: string
+  let truncatedDelegateAddress: string
+  let currentRound = +data.rounds[0].id
+  let status = data.delegator && data.delegator.delegate ? 'Bonded' : 'Unbonded'
+  let { dateFrom, dateTo } = getDates(data.frequency)
+  let formattedDates = formatDates({ dateFrom, dateTo })
 
   if (data.rounds.length) {
     roundsBetweenDates = data.rounds.filter((round: any) => {
@@ -70,31 +69,31 @@ async function formatData(data: any) {
         +round.id !== currentRound &&
         +round.timestamp >= dateFrom &&
         +round.timestamp <= dateTo
-      );
-    });
+      )
+    })
     roundFrom = roundsBetweenDates.reduce(
       (min, p) => (+p.id < +min ? +p.id : +min),
       +roundsBetweenDates[0].id
-    );
+    )
 
     roundTo = roundsBetweenDates.reduce(
       (max, p) => (+p.id > +max ? +p.id : +max),
       +roundsBetweenDates[0].id
-    );
+    )
 
-    totalRounds = roundTo - roundFrom + 1;
+    totalRounds = roundTo - roundFrom + 1
   }
 
   if (data.delegator) {
-    delegatorAddress = data.delegator.id;
+    delegatorAddress = data.delegator.id
   }
 
-  if (status == "Bonded") {
-    delegateAddress = data.delegator.delegate.id;
+  if (status == 'Bonded') {
+    delegateAddress = data.delegator.delegate.id
     truncatedDelegateAddress = delegateAddress.replace(
       delegateAddress.slice(5, -3),
-      "..."
-    );
+      '...'
+    )
   }
 
   // Get all the delegator's shares between the time frame specified (weekly vs monthly)
@@ -104,34 +103,34 @@ async function formatData(data: any) {
         +share.round.id !== currentRound &&
         +share.round.timestamp >= dateFrom &&
         +share.round.timestamp <= dateTo
-      );
-    });
+      )
+    })
     // Add up all the delegator's reward tokens earned during that time frame
     shareRewardTokens = parseFloat(
       Utils.fromWei(
         sharesBetweenDates
           .reduce((acc: any, obj: any) => {
-            return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0);
+            return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
           }, 0)
           .toString(),
-        "ether"
+        'ether'
       )
-    ).toFixed(2);
+    ).toFixed(2)
 
     // Add up all the delegator's fees earned during that time frame
     shareFees = parseFloat(
       Utils.fromWei(
         sharesBetweenDates
           .reduce((acc: any, obj: any) => {
-            return bigInt(acc).plus(obj.fees ? obj.fees : 0);
+            return bigInt(acc).plus(obj.fees ? obj.fees : 0)
           }, 0)
           .toString(),
-        "ether"
+        'ether'
       )
-    ).toFixed(2);
+    ).toFixed(2)
 
-    averageShareRewardTokens = (+shareRewardTokens / totalRounds).toFixed(2);
-    averageShareFees = (+shareFees / totalRounds).toFixed(2);
+    averageShareRewardTokens = (+shareRewardTokens / totalRounds).toFixed(2)
+    averageShareFees = (+shareFees / totalRounds).toFixed(2)
   }
 
   // Get all the delegate's pools between the time frame specified (daily vs weekly)
@@ -145,35 +144,35 @@ async function formatData(data: any) {
         +pool.round.id !== currentRound &&
         +pool.round.timestamp >= dateFrom &&
         +pool.round.timestamp <= dateTo
-      );
-    });
+      )
+    })
     missedRewardCalls = poolsBetweenDates.filter(
       pool => pool.rewardTokens === null
-    ).length;
+    ).length
 
     // Add up all the delegate's claimed reward tokens in the pools during that time frame
     poolRewardTokens = parseFloat(
       Utils.fromWei(
         poolsBetweenDates
           .reduce((acc: any, obj: any) => {
-            return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0);
+            return bigInt(acc).plus(obj.rewardTokens ? obj.rewardTokens : 0)
           }, 0)
           .toString(),
-        "ether"
+        'ether'
       )
-    ).toFixed(2);
+    ).toFixed(2)
 
     // Add up all the delegate's claimed fees in the pools during that time frame
     poolFees = parseFloat(
       Utils.fromWei(
         poolsBetweenDates
           .reduce((acc: any, obj: any) => {
-            return bigInt(acc).plus(obj.fees ? obj.fees : 0);
+            return bigInt(acc).plus(obj.fees ? obj.fees : 0)
           }, 0)
           .toString(),
-        "ether"
+        'ether'
       )
-    ).toFixed(2);
+    ).toFixed(2)
   }
 
   return {
@@ -193,8 +192,8 @@ async function formatData(data: any) {
     delegatorAddress,
     delegateAddress,
     truncatedDelegateAddress,
-    ...formattedDates
-  };
+    ...formattedDates,
+  }
 }
 
 async function getInitialData(delegatorAddress: string) {
@@ -208,47 +207,47 @@ async function getInitialData(delegatorAddress: string) {
         id
       }
     }
-  }`;
+  }`
 
   try {
     let { data } = await axios.post(
       settings.graphAPI,
       {
-        query
+        query,
       },
       {
         headers: {
-          "Content-Type": "application/json"
-        }
+          'Content-Type': 'application/json',
+        },
       }
-    );
-    return data;
+    )
+    return data
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
 }
 
 async function getDelegatorData(frequency: string, delegatorAddress: string) {
-  let { data } = await getInitialData(delegatorAddress);
+  let { data } = await getInitialData(delegatorAddress)
   let delegateAddress =
-    data.delegator && data.delegator.delegate ? data.delegator.delegate.id : "";
-  let currentRound = +data.rounds[0].id;
-  delegatorAddress = data.delegator ? data.delegator.id : "";
+    data.delegator && data.delegator.delegate ? data.delegator.delegate.id : ''
+  let currentRound = +data.rounds[0].id
+  delegatorAddress = data.delegator ? data.delegator.id : ''
 
   // Get delegators most recent 40 shares
-  let limit = 40;
+  let limit = 40
 
   // Construct where clause for shares fragment
   let id_in_shares = Array.from(
     { length: limit },
     (_v, k) => `"${delegatorAddress}-${k + (currentRound - limit)}"`
-  ).join();
+  ).join()
 
   // Construct where clause for pools fragment
   let id_in_pools = Array.from(
     { length: limit },
     (_v, k) => `"${delegateAddress}-${k + (currentRound - limit)}"`
-  ).join();
+  ).join()
 
   let query = `{
     rounds(first: 50, orderDirection: desc, orderBy: timestamp) {
@@ -277,39 +276,39 @@ async function getDelegatorData(frequency: string, delegatorAddress: string) {
         }
       }
     }
-  }`;
+  }`
 
   try {
     let { data } = await axios.post(
       settings.graphAPI,
       {
-        query: query
+        query: query,
       },
       {
         headers: {
-          "Content-Type": "application/json"
-        }
+          'Content-Type': 'application/json',
+        },
       }
-    );
-    return formatData({ frequency, ...data.data });
+    )
+    return formatData({ frequency, ...data.data })
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
 }
 
 function formatDates({ dateFrom, dateTo }) {
-  let monthFrom = moment.unix(dateFrom).format("MMMM");
-  let monthTo = moment.unix(dateTo).format("MMMM");
-  let abbrMonthFrom = moment.unix(dateFrom).format("MMM");
-  let abbrMonthTo = moment.unix(dateTo).format("MMM");
-  let numberDateFrom = moment.unix(dateFrom).format("D");
-  let numberDateTo = moment.unix(dateTo).format("D");
-  let ordinalDateFrom = moment.unix(dateFrom).format("Do");
-  let ordinalDateTo = moment.unix(dateTo).format("Do");
-  let year = moment.unix(dateTo).format("YYYY");
+  let monthFrom = moment.unix(dateFrom).format('MMMM')
+  let monthTo = moment.unix(dateTo).format('MMMM')
+  let abbrMonthFrom = moment.unix(dateFrom).format('MMM')
+  let abbrMonthTo = moment.unix(dateTo).format('MMM')
+  let numberDateFrom = moment.unix(dateFrom).format('D')
+  let numberDateTo = moment.unix(dateTo).format('D')
+  let ordinalDateFrom = moment.unix(dateFrom).format('Do')
+  let ordinalDateTo = moment.unix(dateTo).format('Do')
+  let year = moment.unix(dateTo).format('YYYY')
   let todaysDate = moment()
-    .tz("America/New_York")
-    .format("MMM D, YYYY");
+    .tz('America/New_York')
+    .format('MMM D, YYYY')
 
   return {
     monthFrom,
@@ -321,8 +320,8 @@ function formatDates({ dateFrom, dateTo }) {
     year,
     todaysDate,
     dateFrom: numberDateFrom,
-    dateTo: numberDateTo
-  };
+    dateTo: numberDateTo,
+  }
 }
 
 async function sendEmail({
@@ -331,71 +330,71 @@ async function sendEmail({
   delegatorAddress,
   senderEmail,
   senderName,
-  unsubscribeRedirect
+  unsubscribeRedirect,
 }: any) {
-  let data: any = await getDelegatorData(frequency, delegatorAddress);
-  let title = `Staking Digest (${frequency.charAt(0).toUpperCase() +
-    frequency.slice(1)})`;
+  let data: any = await getDelegatorData(frequency, delegatorAddress)
+  let title = `Staking Alerts (${frequency.charAt(0).toUpperCase() +
+    frequency.slice(1)})`
   let unsubscribeLink = `${
     settings.url
   }/staking-alerts?action=unsubscribe&frequency=${frequency}${
-    unsubscribeRedirect ? `&redirect=${unsubscribeRedirect}` : ""
-  }`;
+    unsubscribeRedirect ? `&redirect=${unsubscribeRedirect}` : ''
+  }`
 
   let mailData = {
     personalizations: [
       {
         to: [
           {
-            email
-          }
+            email,
+          },
         ],
         custom_args: {
           frequency,
           delegatorAddress,
-          timeSent: String(Date.now())
+          timeSent: String(Date.now()),
         },
         dynamic_template_data: {
           title,
           subject: `Livepeer Staking Alert for ${delegatorAddress}`,
           frequency,
           unsubscribeLink,
-          ...data
-        }
-      }
+          ...data,
+        },
+      },
     ],
     from: {
-      email: senderEmail ? senderEmail : "no-reply@livepeer.studio",
-      name: senderName ? senderName : "Livepeer Studio"
+      email: senderEmail ? senderEmail : 'no-reply@livepeer.studio',
+      name: senderName ? senderName : 'Livepeer Studio',
     },
     reply_to: {
-      email: senderEmail ? senderEmail : "no-reply@livepeer.studio",
-      name: senderName ? senderName : "Livepeer Studio"
+      email: senderEmail ? senderEmail : 'no-reply@livepeer.studio',
+      name: senderName ? senderName : 'Livepeer Studio',
     },
     template_id:
-      data.status == "Bonded"
+      data.status == 'Bonded'
         ? settings.alertsTemplateID
-        : settings.unbondedTemplateID
-  };
+        : settings.unbondedTemplateID,
+  }
 
   try {
     await client.request({
       body: mailData,
-      method: "POST",
-      url: "/v3/mail/send"
-    });
+      method: 'POST',
+      url: '/v3/mail/send',
+    })
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
 }
 
 module.exports = async function(agenda: Agenda) {
-  agenda.define("email", async (job, done) => {
+  agenda.define('email', async (job, done) => {
     if (settings.paused) {
-      done();
+      done()
     } else {
-      await sendEmail({ ...job.attrs.data });
-      done();
+      await sendEmail({ ...job.attrs.data })
+      done()
     }
-  });
-};
+  })
+}
