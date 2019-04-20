@@ -2,7 +2,7 @@ let dev = process.env.NODE_ENV !== 'production'
 
 const settings = {
   url: dev ? 'https://livepeer-studio.serveo.net' : 'https://livepeer.studio',
-  graphAPI: 'http://35.231.3.157/subgraphs/name/livepeer/graphql',
+  graphAPI: 'https://thegraph.livepeer.studio/subgraphs/name/livepeer/graphql',
   alertsTemplateID: dev
     ? 'd-a8b3a54c545a46e2ba7205dbab07ce8a'
     : 'd-87642cf59bb0447a860d6b7fdd79f768',
