@@ -6,15 +6,15 @@ require('now-env')
 
 const mongoConnectionString = `mongodb+srv://${process.env.MONGO_USERNAME}:${
   process.env.MONGO_PASSWORD
-}@cluster0-hkwht.mongodb.net/${process.env.MONGO_DB}`
+}@cluster1-hkwht.mongodb.net/${process.env.MONGO_DB}`
 
 const agenda = new Agenda({
   db: {
     address: mongoConnectionString,
     options: {
-      useNewUrlParser: true
-    }
-  }
+      useNewUrlParser: true,
+    },
+  },
 })
 
 const jobTypes = []

@@ -12,7 +12,7 @@ const settings = {
   confirmationTemplateID: dev
     ? 'd-bf0cb17ed98a46048c0dc6486a02d9e1'
     : 'd-b3812189ecf74b92aefe1d98b34ec054',
-  paused: false,
+  paused: true,
 }
 
 export default settings

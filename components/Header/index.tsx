@@ -7,13 +7,13 @@ import LivepeerSDK from '@livepeer/sdk'
 
 export default () => {
   let [currentRound, setCurrentRound] = useState('0000')
-  
+
   async function setData() {
-    let { rpc } = await LivepeerSDK()
+    let { rpc } = await LivepeerSDK({ gas: 2.1 * 1000000 })
     let currentRoundNumber = await rpc.getCurrentRound()
     setCurrentRound(currentRoundNumber)
   }
-  
+
   useEffect(() => {
     setData()
   }, [])
