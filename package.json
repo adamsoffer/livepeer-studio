@@ -23,7 +23,7 @@
     "@zeit/next-typescript": "1.1.1",
     "agenda": "2.0.2",
     "agendash": "0.4.0",
-    "axios": "0.18.0",
+    "axios": "0.21.1",
     "big-integer": "1.6.41",
     "body-parser": "1.15.2",
     "email-validator": "2.0.4",
